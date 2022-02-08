@@ -7,13 +7,16 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mrinjamul/gnote/api/handlers"
+	"github.com/mrinjamul/gnote/api/services"
 )
 
 // ViewsFs for static files
 var ViewsFs embed.FS
 
 func InitRoutes(routes *gin.Engine) {
+	// Initialize services
+	svc := services.NewServices()
+
 	// Serve the frontend
 	// This will ensure that the angular files are served correctly
 	fsRoot, err := fs.Sub(ViewsFs, "views")
@@ -46,10 +49,20 @@ func InitRoutes(routes *gin.Engine) {
 	// Backend API
 	api := routes.Group("/api")
 	{
-		api.GET("/notes", handlers.GetNotes)
-		api.GET("/notes/:id", handlers.GetNote)
-		api.POST("/notes", handlers.CreateNote)
-		api.PUT("/notes/:id", handlers.UpdateNote)
-		api.DELETE("/notes/:id", handlers.DeleteNote)
+		api.GET("/notes", func(c *gin.Context) {
+			svc.NoteService().ReadAll(c)
+		})
+		api.GET("/notes/:id", func(c *gin.Context) {
+			svc.NoteService().Read(c)
+		})
+		api.POST("/notes", func(c *gin.Context) {
+			svc.NoteService().Create(c)
+		})
+		api.PUT("/notes/:id", func(c *gin.Context) {
+			svc.NoteService().Update(c)
+		})
+		api.DELETE("/notes/:id", func(c *gin.Context) {
+			svc.NoteService().Delete(c)
+		})
 	}
 }
