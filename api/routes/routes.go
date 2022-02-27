@@ -2,12 +2,13 @@ package routes
 
 import (
 	"embed"
-	"io/fs"
-	"log"
 	"net/http"
+	"path"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrinjamul/gnote/api/services"
+	"github.com/mrinjamul/gnote/middleware"
 )
 
 // ViewsFs for static files
@@ -18,23 +19,22 @@ func InitRoutes(routes *gin.Engine) {
 	svc := services.NewServices()
 
 	// Serve the frontend
-	// This will ensure that the angular files are served correctly
-	fsRoot, err := fs.Sub(ViewsFs, "views")
-	if err != nil {
-		log.Println(err)
-	}
-	routes.NoRoute(gin.WrapH(http.FileServer(http.FS(fsRoot))))
-	// routes.StaticFS("/", http.FS(fsRoot))
+	// This will ensure that the web pages are served correctly
+	routes.NoRoute(func(c *gin.Context) {
+		dir, file := path.Split(c.Request.RequestURI)
+		ext := filepath.Ext(file)
+		if file == "" || ext == "" {
+			c.File("./views/index.html")
+		} else {
+			c.File("./views/" + path.Join(dir, file))
+		}
+	})
 
-	// routes.NoRoute(func(ctx *gin.Context) {
-	//      dir, file := path.Split(ctx.Request.RequestURI)
-	//      ext := filepath.Ext(file)
-	//      if file == "" || ext == "" {
-	//              ctx.File("./views" + "/index.html")
-	//      } else {
-	//              ctx.File("./views" + "/" + path.Join(dir, file))
-	//      }
-	// })
+	// fsRoot, err := fs.Sub(ViewsFs, "views")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// routes.NoRoute(gin.WrapH(http.FileServer(http.FS(fsRoot))))
 
 	// health check
 	routes.GET("/api/health", func(c *gin.Context) {
@@ -48,6 +48,7 @@ func InitRoutes(routes *gin.Engine) {
 
 	// Backend API
 	api := routes.Group("/api")
+	api.Use(middleware.CORSMiddleware())
 	{
 		api.GET("/notes", func(c *gin.Context) {
 			svc.NoteService().ReadAll(c)

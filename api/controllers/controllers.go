@@ -66,7 +66,6 @@ func (n *note) Read(ctx *gin.Context) {
 			http.StatusOK,
 			gin.H{
 				"message": err,
-				"note":    note,
 			},
 		)
 	}
@@ -112,15 +111,30 @@ func (n *note) Update(ctx *gin.Context) {
 		log.Fatal(err)
 	}
 
-	var note models.Note
+	var note, existingNote models.Note
 	err = json.Unmarshal(bytes, &note)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// get existing note
+
+	if note.Title == "" {
+		existingNote.Title = note.Title
+	}
+	if note.Content == "" {
+		existingNote.Content = note.Content
+	}
+	if note.User == "" {
+		existingNote.User = note.User
+	}
+	// if note.Archived != existingNote.Archived {
+	// 	existingNote.Archived = note.Archived
+	// }
+
 	note.ID = uint64(id)
 
-	note, err = n.noteRepo.Update(ctx, note)
+	note, err = n.noteRepo.Update(ctx, existingNote)
 	if err != nil {
 		ctx.JSON(
 			http.StatusOK,
