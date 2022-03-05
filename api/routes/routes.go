@@ -2,9 +2,9 @@ package routes
 
 import (
 	"embed"
+	"io/fs"
+	"log"
 	"net/http"
-	"path"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrinjamul/gnote/api/services"
@@ -20,21 +20,22 @@ func InitRoutes(routes *gin.Engine) {
 
 	// Serve the frontend
 	// This will ensure that the web pages are served correctly
-	routes.NoRoute(func(c *gin.Context) {
-		dir, file := path.Split(c.Request.RequestURI)
-		ext := filepath.Ext(file)
-		if file == "" || ext == "" {
-			c.File("./views/index.html")
-		} else {
-			c.File("./views/" + path.Join(dir, file))
-		}
-	})
 
-	// fsRoot, err := fs.Sub(ViewsFs, "views")
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// routes.NoRoute(gin.WrapH(http.FileServer(http.FS(fsRoot))))
+	// routes.NoRoute(func(c *gin.Context) {
+	// 	dir, file := path.Split(c.Request.RequestURI)
+	// 	ext := filepath.Ext(file)
+	// 	if file == "" || ext == "" {
+	// 		c.File("./views/index.html")
+	// 	} else {
+	// 		c.File("./views/" + path.Join(dir, file))
+	// 	}
+	// })
+
+	fsRoot, err := fs.Sub(ViewsFs, "views")
+	if err != nil {
+		log.Println(err)
+	}
+	routes.NoRoute(gin.WrapH(http.FileServer(http.FS(fsRoot))))
 
 	// health check
 	routes.GET("/api/health", func(c *gin.Context) {
