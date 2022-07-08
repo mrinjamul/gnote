@@ -2,11 +2,17 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/mrinjamul/gnote/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+)
+
+var (
+	// IsConnected returns the connection status
+	IsConnected bool
 )
 
 func GetDB() *gorm.DB {
@@ -46,9 +52,12 @@ func GetDB() *gorm.DB {
 		dbHost, dbUser, dbPassword, dbName, dbPort)
 	db, err := gorm.Open(postgres.Open(dest), &gorm.Config{})
 
-	if err != nil {
-		panic("failed to connect database")
+	if err == nil {
+		IsConnected = true
+	} else {
+		log.Println("failed to connect database")
 	}
+
 	// Migrate the schema
 	db.AutoMigrate(&models.Note{})
 	return db

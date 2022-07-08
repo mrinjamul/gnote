@@ -7,11 +7,17 @@ import (
 )
 
 type Services interface {
+	HealthCheckService() controllers.HealthCheck
 	NoteService() controllers.Note
 }
 
 type services struct {
-	note controllers.Note
+	healthCheck controllers.HealthCheck
+	note        controllers.Note
+}
+
+func (svc *services) HealthCheckService() controllers.HealthCheck {
+	return svc.healthCheck
 }
 
 func (svc *services) NoteService() controllers.Note {
@@ -22,6 +28,7 @@ func (svc *services) NoteService() controllers.Note {
 func NewServices() Services {
 	db := database.GetDB()
 	return &services{
+		healthCheck: controllers.NewHealthCheck(),
 		note: controllers.NewNote(
 			repository.NewNoteRepo(db),
 		),

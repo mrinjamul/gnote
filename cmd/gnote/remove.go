@@ -17,19 +17,28 @@ package main
 
 import (
 	"fmt"
-	"os"
+
+	"github.com/mrinjamul/gnote/utils"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	rootCmd.AddCommand(serverCmd)
-	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(addCmd)
-	rootCmd.AddCommand(removeCmd)
-	rootCmd.AddCommand(updateCmd)
-	rootCmd.AddCommand(searchCmd)
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+// removeCmd represents the version command
+var removeCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "remove a note.",
+	Run: func(cmd *cobra.Command, args []string) {
+		// parse args
+		if len(args) == 0 {
+			fmt.Println("error: too short argument")
+			fmt.Println("Usage: gnote remove [id]")
+			return
+		}
+		id := args[0]
+		data, err := utils.DeleteNote(id)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(data)
+	},
 }

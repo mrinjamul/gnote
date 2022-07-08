@@ -16,20 +16,14 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-	"os"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	rootCmd.AddCommand(serverCmd)
-	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(addCmd)
-	rootCmd.AddCommand(removeCmd)
-	rootCmd.AddCommand(updateCmd)
-	rootCmd.AddCommand(searchCmd)
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+// searchCmd represents the version command
+var searchCmd = &cobra.Command{
+	Use:   "search",
+	Short: "search note(s).",
+	Run: func(cmd *cobra.Command, args []string) {
+		//
+	},
 }

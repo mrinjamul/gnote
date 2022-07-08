@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrinjamul/gnote/api/services"
@@ -13,6 +14,11 @@ import (
 
 // ViewsFs for static files
 var ViewsFs embed.FS
+
+var (
+	StartTime time.Time
+	BootTime  time.Duration
+)
 
 func InitRoutes(routes *gin.Engine) {
 	// Initialize services
@@ -39,12 +45,7 @@ func InitRoutes(routes *gin.Engine) {
 
 	// health check
 	routes.GET("/api/health", func(c *gin.Context) {
-		c.JSON(
-			http.StatusOK,
-			gin.H{
-				"health": "ok",
-			},
-		)
+		svc.HealthCheckService().HealthCheck(c, StartTime, BootTime)
 	})
 
 	// Backend API
