@@ -3,7 +3,6 @@ package controllers
 import (
 	"io/fs"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +10,6 @@ import (
 )
 
 type Views interface {
-	Favicon(ctx *gin.Context, fsStatic fs.FS)
 	App(ctx *gin.Context, fsRoot fs.FS)
 	Login(ctx *gin.Context, fsRoot fs.FS)
 	Register(ctx *gin.Context, fsRoot fs.FS)
@@ -22,24 +20,6 @@ type Views interface {
 }
 
 type views struct {
-}
-
-// Favicon returns a favicon
-func (v *views) Favicon(ctx *gin.Context, fsStatic fs.FS) {
-	fav, err := fsStatic.Open("favicon.ico")
-	if err != nil {
-		log.Println(err)
-		ctx.AbortWithStatus(http.StatusNotFound)
-		return
-	}
-	defer fav.Close()
-	// Read the file
-	b, err := ioutil.ReadAll(fav)
-	if err != nil {
-		panic(err)
-	}
-	// c.Writer.Header().Set("Content-Type", "image/x-icon")
-	ctx.Data(http.StatusOK, "image/x-icon", b)
 }
 
 // App returns a app page

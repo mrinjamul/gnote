@@ -51,10 +51,6 @@ func InitRoutes(routes *gin.Engine) {
 	routes.StaticFS("/static", http.FS(fsStatic))
 
 	// Serve the frontend
-	// Serve favicon.ico
-	routes.GET("/favicon.ico", func(ctx *gin.Context) {
-		svc.ViewService().Favicon(ctx, fsStatic)
-	})
 	// Home Page
 	routes.GET("/", func(ctx *gin.Context) {
 		svc.ViewService().App(ctx, fsRoot)
