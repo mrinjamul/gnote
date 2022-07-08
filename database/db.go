@@ -60,5 +60,6 @@ func GetDB() *gorm.DB {
 
 	// Migrate the schema
 	db.AutoMigrate(&models.Note{})
+	db.AutoMigrate(&models.User{})
 	return db
 }

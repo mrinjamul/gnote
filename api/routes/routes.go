@@ -37,11 +37,45 @@ func InitRoutes(routes *gin.Engine) {
 	// 	}
 	// })
 
+	// Get Views
 	fsRoot, err := fs.Sub(ViewsFs, "views")
 	if err != nil {
 		log.Println(err)
 	}
-	routes.NoRoute(gin.WrapH(http.FileServer(http.FS(fsRoot))))
+	// Get static files
+	fsStatic, err := fs.Sub(ViewsFs, "views/static")
+	if err != nil {
+		log.Println(err)
+	}
+	// Serve static files
+	routes.StaticFS("/static", http.FS(fsStatic))
+
+	// Serve the frontend
+	// Serve favicon.ico
+	routes.GET("/favicon.ico", func(ctx *gin.Context) {
+		svc.ViewService().Favicon(ctx, fsStatic)
+	})
+	// Home Page
+	routes.GET("/", func(ctx *gin.Context) {
+		svc.ViewService().App(ctx, fsRoot)
+	})
+	// Login Page
+	routes.GET("/login", func(ctx *gin.Context) {
+		svc.ViewService().Login(ctx, fsRoot)
+	})
+	// Register Page
+	routes.GET("/register", func(ctx *gin.Context) {
+		svc.ViewService().Register(ctx, fsRoot)
+	})
+	// My Account Page
+	routes.GET("/account", func(ctx *gin.Context) {
+		svc.ViewService().MyAccount(ctx, fsRoot)
+	})
+
+	// Add 404 page
+	routes.NoRoute(func(ctx *gin.Context) {
+		svc.ViewService().NotFound(ctx, fsRoot)
+	})
 
 	// Backend API
 
@@ -61,12 +95,34 @@ func InitRoutes(routes *gin.Engine) {
 		auth.POST("/refresh", func(c *gin.Context) {
 			svc.UserService().RefreshToken(c)
 		})
-		auth.GET("/logout", func(c *gin.Context) {
+		auth.POST("/logout", func(c *gin.Context) {
 			svc.UserService().SignOut(c)
 		})
 
 	}
 
+	userRoute := routes.Group("/user")
+	{
+		userRoute.GET("/:username", func(ctx *gin.Context) {
+			svc.UserService().ViewUser(ctx)
+		})
+		userRoute.GET("/search", func(ctx *gin.Context) {
+			// TODO: implement search
+			// response not implemented
+			ctx.JSON(200, gin.H{
+				"message": "Search not implemented",
+			})
+		})
+		userRoute.GET("/me", middleware.JWTAuth(), func(ctx *gin.Context) {
+			svc.UserService().UserDetails(ctx)
+		})
+		userRoute.PATCH("/me", middleware.JWTAuth(), func(ctx *gin.Context) {
+			svc.UserService().UpdateUser(ctx)
+		})
+		userRoute.DELETE("/me", middleware.JWTAuth(), func(ctx *gin.Context) {
+			svc.UserService().DeleteUser(ctx)
+		})
+	}
 	api := routes.Group("/api")
 	api.Use(middleware.CORSMiddleware())
 	api.Use(middleware.JWTAuth())

@@ -63,7 +63,7 @@ func (n *note) Create(ctx *gin.Context) {
 		return
 	}
 
-	note.User = claims.UserName
+	note.UserName = claims.UserName
 
 	err = n.noteRepo.Create(ctx, &note)
 	if err != nil {
@@ -112,8 +112,8 @@ func (n *note) Read(ctx *gin.Context) {
 	}
 
 	note := models.Note{
-		ID:   uint64(id),
-		User: claims.UserName,
+		ID:       uint64(id),
+		UserName: claims.UserName,
 	}
 
 	note, err = n.noteRepo.Read(ctx, note)
@@ -207,8 +207,8 @@ func (n *note) Update(ctx *gin.Context) {
 	if note.Content == "" {
 		existingNote.Content = note.Content
 	}
-	if note.User == "" {
-		existingNote.User = note.User
+	if note.UserName == "" {
+		existingNote.UserName = note.UserName
 	}
 	// if note.Archived != existingNote.Archived {
 	// 	existingNote.Archived = note.Archived
@@ -243,7 +243,7 @@ func (n *note) Update(ctx *gin.Context) {
 	note.ID = uint64(id)
 
 	// if username is not same as login
-	if claims.UserName != note.User {
+	if claims.UserName != note.UserName {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": "you are not owner of this note",
 		})
@@ -304,8 +304,8 @@ func (n *note) Delete(ctx *gin.Context) {
 	}
 
 	note := models.Note{
-		ID:   uint64(id),
-		User: claims.UserName,
+		ID:       uint64(id),
+		UserName: claims.UserName,
 	}
 
 	err = n.noteRepo.Delete(ctx, &note)

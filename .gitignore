@@ -17,4 +17,7 @@ sqlite.db
 # vendor/
 
 # secrets
-.env
+*.env
+
+# Docker
+/docker/data

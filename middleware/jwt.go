@@ -31,7 +31,7 @@ func JWTAuth() gin.HandlerFunc {
 			tkn, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
 			if err != nil {
 				ctx.JSON(http.StatusUnauthorized, gin.H{
-					"error": "invalid token",
+					"error": "no token provided",
 				})
 				ctx.Abort()
 				return

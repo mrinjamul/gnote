@@ -5,6 +5,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -72,15 +73,17 @@ func (u *user) SignUp(ctx *gin.Context) {
 		return
 	}
 
-	// Validate the user data
-	err = utils.ValidateUser(&user)
-	if err != nil {
+	// Validate Password
+	ok := utils.IsValidPassword(user.Password)
+	if !ok {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"error":   "bad request",
+			"message": "bad password",
 		})
 		ctx.Abort()
 		return
 	}
+
 	user.Role = "user"
 	user.Level = 1
 
@@ -195,17 +198,20 @@ func (u *user) SignIn(ctx *gin.Context) {
 		})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"status": "success",
-		"token":  tokenString,
-	})
 
 	// Get Hostname
 	hostname := ctx.Request.Host
+	if strings.Contains(hostname, ":") {
+		hostname = strings.Split(hostname, ":")[0]
+	}
 	// Finally, we set the client cookie for "token" as the JWT we just generated
 	// we also set an expiry time which is the same as the token itself
 	// set cookie with name "token" and value "tokenString"
 	ctx.SetCookie("token", tokenString, utils.ToMaxAge(expiresAt), "/", hostname, false, true)
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"token":  tokenString,
+	})
 }
 
 // RefreshToken refreshes the token
@@ -274,7 +280,7 @@ func (u *user) RefreshToken(ctx *gin.Context) {
 	// We ensure that a new token is not issued until enough time has elapsed
 	// In this case, a new token will only be issued if the old token is within
 	// 30 seconds of expiry. Otherwise, return a bad request status
-	if time.Until(claims.ExpiresAt.Time) > 30*time.Second {
+	if time.Until(claims.ExpiresAt.Time) > 60*time.Second {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": "bad request",
 		})
@@ -296,23 +302,33 @@ func (u *user) RefreshToken(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
+
+	hostname := ctx.Request.Host
+	if strings.Contains(hostname, ":") {
+		hostname = strings.Split(hostname, ":")[0]
+	}
+	// Set cookie with name "token" and value "tokenString"
+	ctx.SetCookie("token", tokenString, utils.ToMaxAge(expiresAt), "/", hostname, false, true)
 	ctx.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"token":  tokenString,
 	})
-	// Set cookie with name "token" and value "tokenString"
-	ctx.SetCookie("token", tokenString, utils.ToMaxAge(expiresAt), "/", ctx.Request.Host, false, true)
 }
 
 // SignOut logs out a user
 func (u *user) SignOut(ctx *gin.Context) {
+
+	hostname := ctx.Request.Host
+	if strings.Contains(hostname, ":") {
+		hostname = strings.Split(hostname, ":")[0]
+	}
+	// remove the token from the cookies
+	ctx.SetCookie("token", "", -1, "/", hostname, false, true)
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "user logged out",
 	})
-
-	// remove the token from the cookies
-	ctx.SetCookie("token", "", -1, "/", ctx.Request.Host, false, true)
-
+	// Redirect to the login page
+	ctx.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
 // UserDetails returns the user details
@@ -578,6 +594,8 @@ func (u *user) DeleteUser(ctx *gin.Context) {
 		"status":  "success",
 		"message": "User deleted successfully",
 	})
+	// Redirect to the home page
+	ctx.Redirect(http.StatusMovedPermanently, "/")
 }
 
 // NewUser initializes a new user controller

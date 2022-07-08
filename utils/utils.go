@@ -179,7 +179,7 @@ func IsValidPassword(s string) bool {
 		hasNumber  = false
 		hasSpecial = false
 	)
-	if len(s) >= 7 {
+	if len(s) >= 8 {
 		hasMinLen = true
 	}
 	for _, char := range s {

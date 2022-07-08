@@ -12,7 +12,7 @@ type Note struct {
 	ID        uint64    `json:"id"`
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
-	User      string    `json:"user"`
+	UserName  string    `json:"username"`
 	Archived  bool      `json:"archived"`
 	CreatedAt time.Time `json:"createdat"`
 	UpdatedAt time.Time `json:"updatedat"`

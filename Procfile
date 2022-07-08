@@ -1,1 +1,1 @@
-web: gnote server
+web: gnote serve

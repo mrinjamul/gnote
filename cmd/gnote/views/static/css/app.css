@@ -1,0 +1,88 @@
+.loader {
+  border: 5px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 5px solid #0000aa;
+  width: 24px;
+  height: 24px;
+  -webkit-animation: spin 1s linear infinite; /* Safari */
+  animation: spin 1s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+code {
+  background-color: #f1f1f1;
+  padding: 0.1em 0.2em;
+}
+
+pre {
+  background-color: #ececec;
+  line-height: 1.4;
+  overflow-x: auto;
+  padding: 1em;
+}
+
+a code:hover {
+  color: black;
+  background: var(--hovercolor);
+}
+
+.highlight pre ::selection {
+  background: lightgray;
+  color: inherit;
+}
+
+pre code {
+  background-color: transparent;
+  color: inherit;
+  font-size: 100%;
+  padding: 0;
+}
+
+@media screen and (min-width: 600px) {
+  pre code {
+    font-size: 1.1em;
+  }
+}
+
+.textarea {
+  border: 1px solid #ccc;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 10px 6px;
+  font-size: 1em;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  resize: vertical;
+  min-height: 30px;
+  line-height: 20px;
+}
+.textarea[contenteditable]:empty::before {
+  content: "How have things been? Start jotsying your notes here ...";
+  color: gray;
+}
+
+img {
+  width: 100%;
+}
+
+.hidden {
+  display: none;
+}

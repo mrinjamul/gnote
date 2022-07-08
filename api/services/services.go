@@ -10,12 +10,14 @@ type Services interface {
 	HealthCheckService() controllers.HealthCheck
 	NoteService() controllers.Note
 	UserService() controllers.User
+	ViewService() controllers.Views
 }
 
 type services struct {
 	healthCheck controllers.HealthCheck
 	note        controllers.Note
 	user        controllers.User
+	views       controllers.Views
 }
 
 func (svc *services) HealthCheckService() controllers.HealthCheck {
@@ -30,6 +32,10 @@ func (svc *services) UserService() controllers.User {
 	return svc.user
 }
 
+func (svc *services) ViewService() controllers.Views {
+	return svc.views
+}
+
 // NewServices initializes services
 func NewServices() Services {
 	db := database.GetDB()
@@ -41,5 +47,6 @@ func NewServices() Services {
 		user: controllers.NewUser(
 			repository.NewUserRepo(db),
 		),
+		views: controllers.NewViews(),
 	}
 }
