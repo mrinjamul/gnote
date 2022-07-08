@@ -23,6 +23,7 @@
           role="alert"
           id="alertBox"
         >
+          <div id="alertBoxDiv"></div>
           Something went wrong!
           <button
             type="button"
@@ -71,7 +72,7 @@
           />
           <label for="vpass">Verify password</label>
         </div>
-        <button class="w-100 btn btn-lg btn-primary" onclick="SignUp()">
+        <button class="w-100 btn btn-lg btn-primary" onclick="verifyPassword()">
           Sign up
         </button>
       </div>
@@ -87,22 +88,26 @@
       crossorigin="anonymous"
     ></script>
     <script>
-      // Get UserName
-      username = document.getElementById("username");
-      // Get Password
-      // password = document.getElementById("floatingPassword");
-      // vpwd document
+      const username = document.getElementById("username");
+      const pwd = document.getElementById("pass");
+      const vpwd = document.getElementById("vpass");
 
-      function SignUp() {
-        verifyPassword();
+      function verifyPassword() {
+        var pass = pwd.value;
+        var vpass = vpwd.value;
+        if (pass == vpass) {
+          register();
+        } else {
+          alert("The passwords don't match");
+        }
       }
 
       function register() {
-        if (checkEmpty(username, password)) {
+        if (!isEmpty(username.value, pwd.value)) {
           // Post to server
           let user = {
             username: username.value,
-            password: vpwd.value,
+            password: pwd.value,
           };
           postData("/auth/signup", user).then((data) => {
             if (data.status == "success") {
@@ -112,12 +117,12 @@
               // Show error
               let alertCompo = document.getElementById("alertBox");
               alertCompo.classList.remove("hidden");
-              alertCompo.value = data.error;
+              document.getElementById("alertBoxDiv").value = data.error;
             }
           });
         } else {
           // Check if username and password are empty
-          document.getElementById("alertError").classList.remove("hidden");
+          document.getElementById("alertBox").classList.remove("hidden");
         }
       }
     </script>

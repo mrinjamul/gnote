@@ -21,6 +21,7 @@
         class="alert alert-danger alert-dismissible fade show align-items-center hidden"
         role="alert"
       >
+        <div id="alertErrordiv"></div>
         Incorrect username or password
         <button
           type="button"
@@ -68,11 +69,11 @@
     <script>
       // Main
       // Get UserName
-      username = document.getElementById("floatingInput");
+      const username = document.getElementById("floatingInput");
       // Get Password
-      password = document.getElementById("floatingPassword");
+      const password = document.getElementById("floatingPassword");
       function login() {
-        if (checkEmpty(username, password)) {
+        if (!isEmpty(username.value, password.value)) {
           // Post to server
           let user = {
             username: username.value,
@@ -86,7 +87,7 @@
               // Show error
               let alertCompo = document.getElementById("alertError");
               alertCompo.classList.remove("hidden");
-              alertCompo.value = data.error;
+              document.getElementById("alertErrordiv").value = data.error;
             }
           });
         } else {
