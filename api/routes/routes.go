@@ -72,6 +72,14 @@ func InitRoutes(routes *gin.Engine) {
 		svc.ViewService().MyAccount(ctx, fsRoot)
 	})
 
+	// Delete Page
+	routes.GET("/delete/user", func(ctx *gin.Context) {
+		svc.ViewService().Delete(ctx, fsRoot)
+	})
+	routes.GET("/delete/notes", func(ctx *gin.Context) {
+		svc.ViewService().DeleteNote(ctx, fsRoot)
+	})
+
 	// Add 404 page
 	routes.NoRoute(func(ctx *gin.Context) {
 		svc.ViewService().NotFound(ctx, fsRoot)
@@ -141,6 +149,9 @@ func InitRoutes(routes *gin.Engine) {
 		})
 		api.DELETE("/notes/:id", func(c *gin.Context) {
 			svc.NoteService().Delete(c)
+		})
+		api.DELETE("/notes", func(c *gin.Context) {
+			svc.NoteService().DeleteByUsername(c)
 		})
 	}
 }

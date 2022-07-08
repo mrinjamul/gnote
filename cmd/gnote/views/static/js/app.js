@@ -68,7 +68,7 @@ async function fetchAndUpdate() {
 
             `;
 
-      notesDiv += noteDiv;
+      notesDiv = noteDiv + notesDiv;
     }
     userinfo = `
             <h1>Welcome, <br />@${username}!</h1>

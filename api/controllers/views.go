@@ -17,6 +17,8 @@ type Views interface {
 	Register(ctx *gin.Context, fsRoot fs.FS)
 	MyAccount(ctx *gin.Context, fsRoot fs.FS)
 	NotFound(ctx *gin.Context, fsRoot fs.FS)
+	Delete(ctx *gin.Context, fsRoot fs.FS)
+	DeleteNote(ctx *gin.Context, fsRoot fs.FS)
 }
 
 type views struct {
@@ -161,6 +163,64 @@ func (v *views) NotFound(ctx *gin.Context, fsRoot fs.FS) {
 		panic(err)
 	}
 	// Write the content to the response
+	ctx.Data(http.StatusOK, "text/html; charset=utf-8", b)
+}
+
+// Delete returns a delete page
+func (v *views) Delete(ctx *gin.Context, fsRoot fs.FS) {
+	// check if token is present
+	// Get cookie "token"
+	_, err := ctx.Cookie("token")
+	if err != nil {
+		_, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		if err != nil {
+			// redirect to login page if not logged in
+			ctx.Redirect(http.StatusFound, "/login")
+			return
+		}
+	}
+	// Get delete.html from fsRoot
+	delete, err := fsRoot.Open("delete.html")
+	if err != nil {
+		panic(err)
+	}
+	defer delete.Close()
+	// Read the file
+	b, err := ioutil.ReadAll(delete)
+	if err != nil {
+		panic(err)
+	}
+	// Write the content to the response
+	// ctx.Writer.Write(b)
+	ctx.Data(http.StatusOK, "text/html; charset=utf-8", b)
+}
+
+// Delete returns a delete page
+func (v *views) DeleteNote(ctx *gin.Context, fsRoot fs.FS) {
+	// check if token is present
+	// Get cookie "token"
+	_, err := ctx.Cookie("token")
+	if err != nil {
+		_, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		if err != nil {
+			// redirect to login page if not logged in
+			ctx.Redirect(http.StatusFound, "/login")
+			return
+		}
+	}
+	// Get delete_note.html from fsRoot
+	delete, err := fsRoot.Open("delete_note.html")
+	if err != nil {
+		panic(err)
+	}
+	defer delete.Close()
+	// Read the file
+	b, err := ioutil.ReadAll(delete)
+	if err != nil {
+		panic(err)
+	}
+	// Write the content to the response
+	// ctx.Writer.Write(b)
 	ctx.Data(http.StatusOK, "text/html; charset=utf-8", b)
 }
 

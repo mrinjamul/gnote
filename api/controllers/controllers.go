@@ -20,6 +20,7 @@ type Note interface {
 	ReadAll(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	Delete(ctx *gin.Context)
+	DeleteByUsername(ctx *gin.Context)
 }
 
 type note struct {
@@ -326,6 +327,77 @@ func (n *note) Delete(ctx *gin.Context) {
 			"note":    note,
 		},
 	)
+}
+
+// DeleteByUsername deletes all notes by username
+func (n *note) DeleteByUsername(ctx *gin.Context) {
+	var user map[string]string
+	err := ctx.BindJSON(&user)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "internal server error",
+		})
+		ctx.Abort()
+		return
+	}
+	// Get cookie "token"
+	tokenString, err := ctx.Cookie("token")
+	if err != nil {
+		tkn, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid token",
+			})
+			ctx.Abort()
+			return
+		}
+		tokenString = tkn
+	}
+
+	claims := &models.Claims{}
+	token, _ := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+	if !token.Valid {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid token",
+		})
+		ctx.Abort()
+		return
+	}
+
+	valid, err := n.noteRepo.VerifyPassword(ctx, claims.UserName, user["password"])
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "internal server error",
+		})
+		ctx.Abort()
+		return
+	}
+
+	if !valid {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid password",
+		})
+		ctx.Abort()
+		return
+	}
+
+	err = n.noteRepo.DeleteAllByUserName(ctx, claims.UserName)
+	if err != nil {
+		ctx.JSON(
+			http.StatusOK,
+			gin.H{
+				"status":  "error",
+				"message": err,
+			})
+	}
+	ctx.JSON(
+		http.StatusOK,
+		gin.H{
+			"status":  "success",
+			"message": "all notes deleted",
+		})
 }
 
 // NewNote initializes note

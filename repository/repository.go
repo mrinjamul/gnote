@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/mrinjamul/gnote/models"
+	"github.com/mrinjamul/gnote/utils"
 	"gorm.io/gorm"
 )
 
@@ -13,6 +14,8 @@ type NoteRepo interface {
 	ReadAll(ctx *gin.Context) ([]models.Note, error)
 	Update(ctx *gin.Context, note models.Note) (models.Note, error)
 	Delete(ctx *gin.Context, note *models.Note) error
+	DeleteAllByUserName(ctx *gin.Context, username string) error
+	VerifyPassword(ctx *gin.Context, username, password string) (bool, error)
 }
 
 type noteRepo struct {
@@ -89,6 +92,33 @@ func (repo *noteRepo) Delete(ctx *gin.Context, note *models.Note) error {
 		return result.Error
 	}
 	return nil
+}
+
+// 	DeleteAllByUserName deletes all notes by user name
+func (repo noteRepo) DeleteAllByUserName(ctx *gin.Context, username string) error {
+	var notes []models.Note
+	notes, err := repo.ReadByUserName(ctx, username)
+	if err != nil {
+		return err
+	}
+	for _, note := range notes {
+		err = repo.db.Delete(&note).Error
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// VerifyPassword verifies the password
+func (repo *noteRepo) VerifyPassword(ctx *gin.Context, username, password string) (bool, error) {
+	var user models.User
+	err := repo.db.Find(&user, "user_name = ?", username).Error
+	ok := utils.VerifyHash(password, user.Password)
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
 }
 
 // NewNoteRepo initializes the note repository

@@ -72,6 +72,13 @@
           />
           <label for="vpass">Verify password</label>
         </div>
+        <div class="alert alert-info hidden" role="alert" id="passhint">
+          <small>
+            password should be contains at least 8 characters, and at least one
+            of the following: uppercase letter, lowercase letter, number, and a
+            special character.
+          </small>
+        </div>
         <button class="w-100 btn btn-lg btn-primary" onclick="verifyPassword()">
           Sign up
         </button>
@@ -91,6 +98,7 @@
       const username = document.getElementById("username");
       const pwd = document.getElementById("pass");
       const vpwd = document.getElementById("vpass");
+      const hint = document.getElementById("passhint");
 
       function verifyPassword() {
         var pass = pwd.value;
@@ -103,14 +111,17 @@
       }
 
       function register() {
-        if (!isEmpty(username.value, pwd.value)) {
+        if (!isEmpty(username.value, vpwd.value)) {
           // Post to server
           let user = {
             username: username.value,
-            password: pwd.value,
+            email: username.value,
+            password: vpwd.value,
           };
           postData("/auth/signup", user).then((data) => {
-            if (data.status == "success") {
+            if (data.message === "bad password") {
+              hint.classList.remove("hidden");
+            } else if (data.status == "success") {
               // Redirect to home
               window.location.href = "/login";
             } else {
