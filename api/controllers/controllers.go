@@ -8,8 +8,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/mrinjamul/gnote/models"
 	"github.com/mrinjamul/gnote/repository"
+	"github.com/mrinjamul/gnote/utils"
 )
 
 type Note interface {
@@ -35,6 +37,33 @@ func (n *note) Create(ctx *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Get cookie "token"
+	tokenString, err := ctx.Cookie("token")
+	if err != nil {
+		tkn, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid token",
+			})
+			ctx.Abort()
+			return
+		}
+		tokenString = tkn
+	}
+
+	claims := &models.Claims{}
+	token, _ := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+	if !token.Valid {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid token",
+		})
+		ctx.Abort()
+		return
+	}
+
+	note.User = claims.UserName
 
 	err = n.noteRepo.Create(ctx, &note)
 	if err != nil {
@@ -56,8 +85,35 @@ func (n *note) Read(ctx *gin.Context) {
 		log.Fatal(err)
 	}
 
+	// Get cookie "token"
+	tokenString, err := ctx.Cookie("token")
+	if err != nil {
+		tkn, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid token",
+			})
+			ctx.Abort()
+			return
+		}
+		tokenString = tkn
+	}
+
+	claims := &models.Claims{}
+	token, _ := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+	if !token.Valid {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid token",
+		})
+		ctx.Abort()
+		return
+	}
+
 	note := models.Note{
-		ID: uint64(id),
+		ID:   uint64(id),
+		User: claims.UserName,
 	}
 
 	note, err = n.noteRepo.Read(ctx, note)
@@ -80,13 +136,39 @@ func (n *note) Read(ctx *gin.Context) {
 
 // ReadAll reads all notes
 func (n *note) ReadAll(ctx *gin.Context) {
-	notes, err := n.noteRepo.ReadAll(ctx)
+	// Get cookie "token"
+	tokenString, err := ctx.Cookie("token")
+	if err != nil {
+		tkn, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid token",
+			})
+			ctx.Abort()
+			return
+		}
+		tokenString = tkn
+	}
+
+	claims := &models.Claims{}
+	token, _ := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+	if !token.Valid {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid token",
+		})
+		ctx.Abort()
+		return
+	}
+
+	notes, err := n.noteRepo.ReadByUserName(ctx, claims.UserName)
 	if err != nil {
 		ctx.JSON(
 			http.StatusOK,
 			gin.H{
 				"message": err,
-				"notes":   notes,
+				"notes":   "",
 			},
 		)
 	}
@@ -132,7 +214,42 @@ func (n *note) Update(ctx *gin.Context) {
 	// 	existingNote.Archived = note.Archived
 	// }
 
+	// Get cookie "token"
+	tokenString, err := ctx.Cookie("token")
+	if err != nil {
+		tkn, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid token",
+			})
+			ctx.Abort()
+			return
+		}
+		tokenString = tkn
+	}
+
+	claims := &models.Claims{}
+	token, _ := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+	if !token.Valid {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid token",
+		})
+		ctx.Abort()
+		return
+	}
+
 	note.ID = uint64(id)
+
+	// if username is not same as login
+	if claims.UserName != note.User {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "you are not owner of this note",
+		})
+		ctx.Abort()
+		return
+	}
 
 	note, err = n.noteRepo.Update(ctx, existingNote)
 	if err != nil {
@@ -160,8 +277,35 @@ func (n *note) Delete(ctx *gin.Context) {
 		log.Fatal(err)
 	}
 
+	// Get cookie "token"
+	tokenString, err := ctx.Cookie("token")
+	if err != nil {
+		tkn, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid token",
+			})
+			ctx.Abort()
+			return
+		}
+		tokenString = tkn
+	}
+
+	claims := &models.Claims{}
+	token, _ := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+	if !token.Valid {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid token",
+		})
+		ctx.Abort()
+		return
+	}
+
 	note := models.Note{
-		ID: uint64(id),
+		ID:   uint64(id),
+		User: claims.UserName,
 	}
 
 	err = n.noteRepo.Delete(ctx, &note)

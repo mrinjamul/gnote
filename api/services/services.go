@@ -9,11 +9,13 @@ import (
 type Services interface {
 	HealthCheckService() controllers.HealthCheck
 	NoteService() controllers.Note
+	UserService() controllers.User
 }
 
 type services struct {
 	healthCheck controllers.HealthCheck
 	note        controllers.Note
+	user        controllers.User
 }
 
 func (svc *services) HealthCheckService() controllers.HealthCheck {
@@ -24,6 +26,10 @@ func (svc *services) NoteService() controllers.Note {
 	return svc.note
 }
 
+func (svc *services) UserService() controllers.User {
+	return svc.user
+}
+
 // NewServices initializes services
 func NewServices() Services {
 	db := database.GetDB()
@@ -31,6 +37,9 @@ func NewServices() Services {
 		healthCheck: controllers.NewHealthCheck(),
 		note: controllers.NewNote(
 			repository.NewNoteRepo(db),
+		),
+		user: controllers.NewUser(
+			repository.NewUserRepo(db),
 		),
 	}
 }

@@ -9,6 +9,7 @@ import (
 type NoteRepo interface {
 	Create(ctx *gin.Context, note *models.Note) error
 	Read(ctx *gin.Context, note models.Note) (models.Note, error)
+	ReadByUserName(ctx *gin.Context, user string) ([]models.Note, error)
 	ReadAll(ctx *gin.Context) ([]models.Note, error)
 	Update(ctx *gin.Context, note models.Note) (models.Note, error)
 	Delete(ctx *gin.Context, note *models.Note) error
@@ -34,6 +35,16 @@ func (repo *noteRepo) Read(ctx *gin.Context, note models.Note) (models.Note, err
 		return note, result.Error
 	}
 	return note, nil
+}
+
+// ReadByUserName reads all notes by user name
+func (repo *noteRepo) ReadByUserName(ctx *gin.Context, user string) ([]models.Note, error) {
+	var notes []models.Note
+	result := repo.db.Find(&notes, "user_name = ?", user)
+	if result.Error != nil {
+		return notes, result.Error
+	}
+	return notes, nil
 }
 
 // ReadAll reads all notes

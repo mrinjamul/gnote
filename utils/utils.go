@@ -97,6 +97,16 @@ func ToMaxAge(expire time.Time) int {
 	return int(maxAge)
 }
 
+// HashAndSalt generates a hashed password
+func HashAndSalt(password string) (string, error) {
+	// Generate a hashed password with bcypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
+
 // VerifyHash verifies the hashed password
 func VerifyHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))

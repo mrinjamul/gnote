@@ -43,14 +43,33 @@ func InitRoutes(routes *gin.Engine) {
 	}
 	routes.NoRoute(gin.WrapH(http.FileServer(http.FS(fsRoot))))
 
+	// Backend API
+
 	// health check
 	routes.GET("/api/health", func(c *gin.Context) {
 		svc.HealthCheckService().HealthCheck(c, StartTime, BootTime)
 	})
 
-	// Backend API
+	auth := routes.Group("/auth")
+	{
+		auth.POST("/signup", func(c *gin.Context) {
+			svc.UserService().SignUp(c)
+		})
+		auth.POST("/login", func(c *gin.Context) {
+			svc.UserService().SignIn(c)
+		})
+		auth.POST("/refresh", func(c *gin.Context) {
+			svc.UserService().RefreshToken(c)
+		})
+		auth.GET("/logout", func(c *gin.Context) {
+			svc.UserService().SignOut(c)
+		})
+
+	}
+
 	api := routes.Group("/api")
 	api.Use(middleware.CORSMiddleware())
+	api.Use(middleware.JWTAuth())
 	{
 		api.GET("/notes", func(c *gin.Context) {
 			svc.NoteService().ReadAll(c)

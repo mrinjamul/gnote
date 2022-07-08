@@ -25,77 +25,18 @@ func init() {
 func JWTAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// check if token is present
-		if ctx.Request.Header.Get("Authorization") == "" {
-			ctx.JSON(401, gin.H{
-				"error": "unauthorized",
-			})
-			ctx.Abort()
-			return
-		}
-		// get token from header
-		tokenString, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		// Get cookie "token"
+		tokenString, err := ctx.Cookie("token")
 		if err != nil {
-			ctx.JSON(401, gin.H{
-				"error": "unauthorized",
-			})
-			ctx.Abort()
-			return
-		}
-
-		claims := &models.Claims{}
-		// check if token is expired
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return []byte(jwtKey), nil
-		})
-		if !token.Valid {
-			ctx.JSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid token",
-			})
-			ctx.Abort()
-			return
-		}
-		if err != nil {
-			if err == jwt.ErrSignatureInvalid {
+			tkn, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+			if err != nil {
 				ctx.JSON(http.StatusUnauthorized, gin.H{
 					"error": "invalid token",
 				})
 				ctx.Abort()
 				return
 			}
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": "bad token",
-			})
-			ctx.Abort()
-			return
-		}
-
-		// check if token is expired
-		if time.Now().Unix() > claims.ExpiresAt.Unix() {
-			ctx.JSON(http.StatusUnauthorized, gin.H{
-				"error": "token expired",
-			})
-			ctx.Abort()
-			return
-		}
-		ctx.Next()
-	}
-}
-
-// JWTAuthCookie is a middleware for validating JWT tokens through cookie
-func JWTAuthCookie() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		// Get cookie "token"
-		tokenString, err := ctx.Cookie("token")
-		if err != nil {
-			if err == http.ErrNoCookie {
-				ctx.JSON(http.StatusUnauthorized, gin.H{
-					"error": "cookie not found",
-				})
-				return
-			}
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": "bad cookie",
-			})
+			tokenString = tkn
 		}
 
 		claims := &models.Claims{}
@@ -141,21 +82,18 @@ func JWTAuthCookie() gin.HandlerFunc {
 func JWTAuthAdmin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// check if token is present
-		if ctx.Request.Header.Get("Authorization") == "" {
-			ctx.JSON(401, gin.H{
-				"error": "unauthorized",
-			})
-			ctx.Abort()
-			return
-		}
-		// get token from header
-		tokenString, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		// Get cookie "token"
+		tokenString, err := ctx.Cookie("token")
 		if err != nil {
-			ctx.JSON(401, gin.H{
-				"error": "unauthorized",
-			})
-			ctx.Abort()
-			return
+			tkn, err := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+			if err != nil {
+				ctx.JSON(http.StatusUnauthorized, gin.H{
+					"error": "invalid token",
+				})
+				ctx.Abort()
+				return
+			}
+			tokenString = tkn
 		}
 
 		claims := &models.Claims{}
