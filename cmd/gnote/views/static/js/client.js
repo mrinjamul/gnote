@@ -37,3 +37,18 @@ async function getData(url = "") {
   });
   return response.json(); // parses JSON response into native JavaScript objects
 }
+
+// isEmpty check if username or password is empty
+function isEmpty(username, password) {
+  if (username == "" || password == "") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function logout() {
+  postData("/auth/logout", {}).then((data) => {
+    window.location.href = "/";
+  });
+}

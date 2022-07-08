@@ -50,9 +50,9 @@
       <div class="card">
         <div class="card-body">
           <div class="card-header"><h1>My account</h1></div>
-          <p class="p-3 card-text lead">
+          <p class="p-3 card-text lead" id="userinfoEl">
             Welcome to your account settings! Having any trouble? Please
-            <a href="">open an issue here</a>.
+            <a href="http://github.com/mrinjamul/gnote">open an issue here</a>.
             <br />
             Your username is <b>@{{ username }}</b>. You have
             <b>{{ count }} note(s)</b> stored on Gnote.
@@ -83,28 +83,35 @@
       integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
       crossorigin="anonymous"
     ></script>
+    <script src="/static/js/client.js"></script>
     <script>
-      function logout() {
-        postData("/auth/logout", {}).then((data) => {
-          window.location.href = "/";
-        });
-      }
-      async function postData(url = "", data = {}) {
-        // Default options are marked with *
-        const response = await fetch(url, {
-          method: "POST", // *GET, POST, PUT, DELETE, etc.
-          mode: "cors", // no-cors, *cors, same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
-          headers: {
-            "Content-Type": "application/json",
-            // 'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          redirect: "follow", // manual, *follow, error
-          referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-          body: JSON.stringify(data), // body data type must match "Content-Type" header
-        });
-        return response.json(); // parses JSON response into native JavaScript objects
+      // variables
+      let username = "";
+      let notes = [];
+
+      // get document
+      updateDocument = document.getElementById("userinfoEl");
+
+      // fetch userinfo
+      getData("/user/me").then((data) => {
+        username = data.user.user_name;
+      });
+      // Get Notes
+      getData("/api/notes").then((data) => {
+        notes = data.notes;
+        SetInfo(username, notes);
+      });
+
+      function SetInfo(username, notes) {
+        let userElement = `
+      Welcome to your account settings! Having any trouble? Please
+      <a href="http://github.com/mrinjamul/gnote">open an issue here</a>.
+      <br />
+      Your username is <b>@${username}</b>. You have
+      <b>${notes.length} note(s)</b> stored on Gnote.
+      `;
+
+        updateDocument.innerHTML = userElement;
       }
     </script>
   </body>
