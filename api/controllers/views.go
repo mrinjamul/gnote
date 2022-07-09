@@ -67,6 +67,19 @@ func (v *views) App(ctx *gin.Context, fsRoot fs.FS) {
 
 // Login returns a login page
 func (v *views) Login(ctx *gin.Context, fsRoot fs.FS) {
+	// If already logged in, redirect to home page
+	_, err := ctx.Cookie("token")
+	if err == nil {
+		// redirect to login page if not logged in
+		ctx.Redirect(http.StatusFound, "/")
+		return
+	}
+	_, err = utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+	if err == nil {
+		// redirect to login page if not logged in
+		ctx.Redirect(http.StatusFound, "/")
+		return
+	}
 	// Get login.html from fsRoot
 	login, err := fsRoot.Open("login.html")
 	if err != nil {
@@ -85,6 +98,20 @@ func (v *views) Login(ctx *gin.Context, fsRoot fs.FS) {
 
 // Register returns a register page
 func (v *views) Register(ctx *gin.Context, fsRoot fs.FS) {
+	// If already logged in, redirect to home page
+	_, err := ctx.Cookie("token")
+	if err == nil {
+		// redirect to login page if not logged in
+		ctx.Redirect(http.StatusFound, "/")
+		return
+	}
+	_, err = utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+	if err == nil {
+		// redirect to login page if not logged in
+		ctx.Redirect(http.StatusFound, "/")
+		return
+	}
+
 	// Get register.html from fsRoot
 	register, err := fsRoot.Open("register.html")
 	if err != nil {
