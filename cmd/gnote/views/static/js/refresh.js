@@ -1,17 +1,23 @@
 // refresh.js
 
-// Run without check
 let duration = 275;
-setInterval(function () {
+refreshToken(duration);
+
+function refreshToken(duration) {
+  // if (checkCookie("token")) {
+  //   console.log("cookie exists");
+  // }
+
+  // Run without check
+  GETRefresh();
+  setInterval(GETRefresh(), duration * 1000);
+}
+
+function GETRefresh() {
   postData("/auth/refresh", {}).then((data) => {
     // console.log("token refreshed");
   });
-}, duration * 1000);
-
-// if (checkCookie("token")) {
-//   console.log("cookie exists");
-// }
-
+}
 // check if cookie exists or not
 function checkCookie(name = "") {
   var value = getCookie(name);
@@ -41,4 +47,3 @@ function getCookie(name) {
   //return unescape(dc.substring(begin + prefix.length, end));
   return decodeURI(dc.substring(begin + prefix.length, end));
 }
-
