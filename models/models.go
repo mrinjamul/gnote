@@ -12,7 +12,7 @@ type Note struct {
 	ID        uint64    `json:"id" gorm:"primary_key,autoIncrement,not null"`
 	Title     string    `json:"title,omitempty"`
 	Content   string    `json:"content" gorm:"not null"`
-	UserName  string    `json:"username" gorm:"not null"`
+	Username  string    `json:"username" gorm:"not null"`
 	Archived  bool      `json:"archived,omitempty"`
 	CreatedAt time.Time `json:"createdat" gorm:"not null"`
 	UpdatedAt time.Time `json:"updatedat" gorm:"index,not null"`
@@ -24,7 +24,7 @@ type User struct {
 	FirstName  string       `json:"first_name" gorm:"not null"`
 	MiddleName string       `json:"middle_name,omitempty"`
 	LastName   string       `json:"last_name" gorm:"not null"`
-	UserName   string       `json:"username"  gorm:"unique,not null"`
+	Username   string       `json:"username"  gorm:"unique,not null"`
 	Email      string       `json:"email" gorm:"unique"`
 	DOB        time.Time    `json:"dob" gorm:"not null"`
 	Password   string       `json:"password" gorm:"not null"`
@@ -37,14 +37,14 @@ type User struct {
 
 // Create a struct that models the structure of a user in the request body
 type Credentials struct {
-	UserName string `json:"username"`
+	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 // Claims
 type Claims struct {
-	UserName string `json:"username"`
+	Username string `json:"username"`
 	Role     string `json:"role"`
 	Level    int    `json:"level"`
 	jwt.RegisteredClaims

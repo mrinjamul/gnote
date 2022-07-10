@@ -43,7 +43,7 @@ func (repo *noteRepo) Read(ctx *gin.Context, note models.Note) (models.Note, err
 // ReadByUserName reads all notes by user name
 func (repo *noteRepo) ReadByUserName(ctx *gin.Context, user string) ([]models.Note, error) {
 	var notes []models.Note
-	result := repo.db.Find(&notes, "user_name = ?", user)
+	result := repo.db.Find(&notes, "username = ?", user)
 	if result.Error != nil {
 		return notes, result.Error
 	}
@@ -113,7 +113,7 @@ func (repo noteRepo) DeleteAllByUserName(ctx *gin.Context, username string) erro
 // VerifyPassword verifies the password
 func (repo *noteRepo) VerifyPassword(ctx *gin.Context, username, password string) (bool, error) {
 	var user models.User
-	err := repo.db.Find(&user, "user_name = ?", username).Error
+	err := repo.db.Find(&user, "username = ?", username).Error
 	ok := utils.VerifyHash(password, user.Password)
 	if err != nil {
 		return false, err

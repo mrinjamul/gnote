@@ -40,7 +40,7 @@ func (u *userRepo) CreateUser(user models.User) error {
 	err := u.db.
 		Model(models.User{}).
 		Select("count(*) > 0").
-		Where("user_name = ?", user.UserName).
+		Where("username = ?", user.Username).
 		Find(&exists).Error
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (u *userRepo) CreateUser(user models.User) error {
 	err = u.db.
 		Model(models.User{}).
 		Select("count(*) > 0").
-		Where("email = ?", user.UserName).
+		Where("email = ?", user.Email).
 		Find(&exists).Error
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func (u *userRepo) GetUsers() ([]models.User, error) {
 // GetUserByUsername returns a user by username
 func (u *userRepo) GetUserByUsername(username string) (models.User, error) {
 	var user models.User
-	err := u.db.Where("user_name = ?", username).First(&user).Error
+	err := u.db.Where("username = ?", username).First(&user).Error
 	if err != nil {
 		return models.User{}, err
 	}
@@ -123,7 +123,7 @@ func (u *userRepo) DeleteUser(id uint) error {
 	idStr := strconv.Itoa(int(id))
 	user := models.User{
 		ID:       id,
-		UserName: idStr,
+		Username: idStr,
 		Email:    idStr + "@localhost",
 		DeletedAt: sql.NullTime{
 			Time:  time.Now(),

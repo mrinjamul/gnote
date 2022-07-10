@@ -6,7 +6,7 @@ noteDocument = document.getElementById("notes");
 userDocument = document.getElementById("userinfo");
 
 getData("/user/me").then((data) => {
-  username = data.user.user_name;
+  username = data.user.username;
 });
 
 const nonotes = `

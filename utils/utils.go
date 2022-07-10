@@ -249,7 +249,7 @@ func ValidateUser(u *models.User) error {
 	if u.FirstName == "" || u.LastName == "" {
 		return errors.New("first name and last name are required")
 	}
-	if u.UserName == "" {
+	if u.Username == "" {
 		return errors.New("username is required")
 	}
 	if u.Email == "" {

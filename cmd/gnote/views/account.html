@@ -94,7 +94,7 @@
 
       // fetch userinfo
       getData("/user/me").then((data) => {
-        username = data.user.user_name;
+        username = data.user.username;
       });
       // Get Notes
       getData("/api/notes").then((data) => {

@@ -65,7 +65,7 @@ func (u *user) SignUp(ctx *gin.Context) {
 	}
 
 	// check if valid username
-	if !utils.IsValidUserName(user.UserName) {
+	if !utils.IsValidUserName(user.Username) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "invalid username",
 		})
@@ -107,7 +107,7 @@ func (u *user) SignUp(ctx *gin.Context) {
 	}
 	userinfo := map[string]interface{}{
 		"id":          user.ID,
-		"user_name":   user.UserName,
+		"username":    user.Username,
 		"email":       user.Email,
 		"first_name":  user.FirstName,
 		"middle_name": user.MiddleName,
@@ -136,14 +136,14 @@ func (u *user) SignIn(ctx *gin.Context) {
 		})
 		return
 	}
-	if (creds.Email == "" && creds.UserName == "") || creds.Password == "" {
+	if (creds.Email == "" && creds.Username == "") || creds.Password == "" {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": "email or password cannot be empty",
 		})
 		return
 	}
 	// Get the expected password from the database
-	user, err = u.userRepo.GetUserByUsername(creds.UserName)
+	user, err = u.userRepo.GetUserByUsername(creds.Username)
 	if err != nil || user.ID == 0 {
 		user, err = u.userRepo.GetUserByEmail(creds.Email) // error
 		if err != nil {
@@ -179,7 +179,7 @@ func (u *user) SignIn(ctx *gin.Context) {
 	expiresAt := time.Now().Add(5 * time.Minute)
 	// Create the JWT claims, which includes the username and expiry time
 	claims := &models.Claims{
-		UserName: creds.UserName,
+		Username: creds.Username,
 		Role:     user.Role,
 		Level:    user.Level,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -359,7 +359,7 @@ func (u *user) UserDetails(ctx *gin.Context) {
 		return
 	}
 
-	user, err := u.userRepo.GetUserByUsername(claims.UserName)
+	user, err := u.userRepo.GetUserByUsername(claims.Username)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Internal Server Error",
@@ -370,7 +370,7 @@ func (u *user) UserDetails(ctx *gin.Context) {
 
 	userinfo := map[string]interface{}{
 		"id":          user.ID,
-		"user_name":   user.UserName,
+		"username":    user.Username,
 		"email":       user.Email,
 		"first_name":  user.FirstName,
 		"middle_name": user.MiddleName,
@@ -406,7 +406,7 @@ func (u *user) ViewUser(ctx *gin.Context) {
 	if user.ID > 0 && !user.DeletedAt.Valid {
 		// if user is found, return the user info
 		userinfo := map[string]string{
-			"username":   user.UserName,
+			"username":   user.Username,
 			"full_name":  user.FirstName + "" + user.MiddleName + "" + user.LastName,
 			"email":      user.Email,
 			"created_at": user.CreatedAt.Format("2006-01-02 15:04:05"),
@@ -460,7 +460,7 @@ func (u *user) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := u.userRepo.GetUserByUsername(claims.UserName)
+	user, err := u.userRepo.GetUserByUsername(claims.Username)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Internal Server Error",
@@ -482,7 +482,7 @@ func (u *user) UpdateUser(ctx *gin.Context) {
 		user.Email = userinfo["email"].(string)
 	}
 	if userinfo["username"] != nil {
-		user.UserName = userinfo["username"].(string)
+		user.Username = userinfo["username"].(string)
 	}
 	if userinfo["dob"] != nil {
 		user.DOB = userinfo["dob"].(time.Time)
@@ -500,7 +500,7 @@ func (u *user) UpdateUser(ctx *gin.Context) {
 	// Return the updated user
 	userinfo = map[string]interface{}{
 		"id":          user.ID,
-		"user_name":   user.UserName,
+		"username":    user.Username,
 		"email":       user.Email,
 		"first_name":  user.FirstName,
 		"middle_name": user.MiddleName,
@@ -556,7 +556,7 @@ func (u *user) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err = u.userRepo.GetUserByUsername(claims.UserName)
+	user, err = u.userRepo.GetUserByUsername(claims.Username)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Internal Server Error",

@@ -64,7 +64,7 @@ func (n *note) Create(ctx *gin.Context) {
 		return
 	}
 
-	note.UserName = claims.UserName
+	note.Username = claims.Username
 
 	err = n.noteRepo.Create(ctx, &note)
 	if err != nil {
@@ -114,7 +114,7 @@ func (n *note) Read(ctx *gin.Context) {
 
 	note := models.Note{
 		ID:       uint64(id),
-		UserName: claims.UserName,
+		Username: claims.Username,
 	}
 
 	note, err = n.noteRepo.Read(ctx, note)
@@ -163,7 +163,7 @@ func (n *note) ReadAll(ctx *gin.Context) {
 		return
 	}
 
-	notes, err := n.noteRepo.ReadByUserName(ctx, claims.UserName)
+	notes, err := n.noteRepo.ReadByUserName(ctx, claims.Username)
 	if err != nil {
 		ctx.JSON(
 			http.StatusOK,
@@ -217,8 +217,8 @@ func (n *note) Update(ctx *gin.Context) {
 	if note.Content == "" {
 		existingNote.Content = note.Content
 	}
-	if note.UserName == "" {
-		existingNote.UserName = note.UserName
+	if note.Username == "" {
+		existingNote.Username = note.Username
 	}
 	if note.Archived != existingNote.Archived {
 		existingNote.Archived = note.Archived
@@ -253,11 +253,11 @@ func (n *note) Update(ctx *gin.Context) {
 	note.ID = uint64(id)
 
 	// if username is not same as login
-	if claims.UserName != existingNote.UserName {
+	if claims.Username != existingNote.Username {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error":      "you are not owner of this note",
 			"pre_notes":  existingNote,
-			"claim_user": claims.UserName,
+			"claim_user": claims.Username,
 			"notes":      note,
 		})
 		ctx.Abort()
@@ -318,7 +318,7 @@ func (n *note) Delete(ctx *gin.Context) {
 
 	note := models.Note{
 		ID:       uint64(id),
-		UserName: claims.UserName,
+		Username: claims.Username,
 	}
 
 	err = n.noteRepo.Delete(ctx, &note)
@@ -378,7 +378,7 @@ func (n *note) DeleteByUsername(ctx *gin.Context) {
 		return
 	}
 
-	valid, err := n.noteRepo.VerifyPassword(ctx, claims.UserName, user["password"])
+	valid, err := n.noteRepo.VerifyPassword(ctx, claims.Username, user["password"])
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "internal server error",
@@ -395,7 +395,7 @@ func (n *note) DeleteByUsername(ctx *gin.Context) {
 		return
 	}
 
-	err = n.noteRepo.DeleteAllByUserName(ctx, claims.UserName)
+	err = n.noteRepo.DeleteAllByUserName(ctx, claims.Username)
 	if err != nil {
 		ctx.JSON(
 			http.StatusOK,
