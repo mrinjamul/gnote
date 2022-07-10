@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mrinjamul/gnote/utils"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -36,7 +37,10 @@ var rootCmd = &cobra.Command{
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
 	Run: func(cmd *cobra.Command, args []string) {
-		// Main
+		// Root command
+		var tip string = "tip: "
+		tip += utils.GenTips()
+		fmt.Println(tip)
 	},
 }
 

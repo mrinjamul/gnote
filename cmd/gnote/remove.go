@@ -24,8 +24,9 @@ import (
 
 // removeCmd represents the version command
 var removeCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "remove a note.",
+	Use:     "remove",
+	Aliases: []string{"del", "rm", "delete"},
+	Short:   "remove a note.",
 	Run: func(cmd *cobra.Command, args []string) {
 		// parse args
 		if len(args) == 0 {
@@ -34,7 +35,14 @@ var removeCmd = &cobra.Command{
 			return
 		}
 		id := args[0]
-		data, err := utils.DeleteNote(id)
+
+		// Read token from config
+		config, err := utils.GetConfig()
+		if err != nil {
+			panic(err)
+		}
+
+		data, err := utils.DeleteNote(id, config.Token)
 		if err != nil {
 			fmt.Println(err)
 			return

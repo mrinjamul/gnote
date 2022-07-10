@@ -23,16 +23,27 @@ import (
 )
 
 var (
-	flagID int
+	ID string
 )
 
 // listCmd represents the version command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "list note(s).",
+	Use:     "list",
+	Aliases: []string{"view", "read"},
+	Short:   "list note(s).",
 	Run: func(cmd *cobra.Command, args []string) {
-		if flagID != -1 {
-			data, err := utils.GetNote(fmt.Sprintf("%d", flagID))
+		if len(args) > 1 {
+			ID = args[0]
+		}
+
+		// Read token from config
+		config, err := utils.GetConfig()
+		if err != nil {
+			panic(err)
+		}
+
+		if ID != "" {
+			data, err := utils.GetNote(ID, config.Token)
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -40,8 +51,9 @@ var listCmd = &cobra.Command{
 			fmt.Println(data)
 			return
 		}
+
 		// get all notes and print them
-		notes, err := utils.GetNotes()
+		notes, err := utils.GetNotes(config.Token)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -51,5 +63,4 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
-	listCmd.Flags().IntVarP(&flagID, "view", "v", -1, "id of the note")
 }

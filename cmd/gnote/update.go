@@ -32,13 +32,20 @@ var updateCmd = &cobra.Command{
 			fmt.Println("Usage: gnote update -id [id] [title] [content]")
 			return
 		}
+
+		// Read token from config
+		config, err := utils.GetConfig()
+		if err != nil {
+			panic(err)
+		}
+
 		flagTitle = args[0]
 		if len(args) > 1 {
 			flagContent = args[1]
 		}
 		fmt.Println("Title:", flagTitle)
 		fmt.Println("Body:", flagContent)
-		data, err := utils.UpdateNote(fmt.Sprintf("%d", flagID), flagTitle, flagContent)
+		data, err := utils.UpdateNote(ID, flagTitle, flagContent, config.Token)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -48,5 +55,5 @@ var updateCmd = &cobra.Command{
 }
 
 func init() {
-	updateCmd.Flags().IntVarP(&flagID, "id", "i", 0, "title of the note")
+	updateCmd.Flags().StringVarP(&ID, "id", "i", "", "id of the note")
 }

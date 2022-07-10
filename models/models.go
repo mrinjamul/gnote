@@ -9,13 +9,13 @@ import (
 
 // Note struct
 type Note struct {
-	ID        uint64    `json:"id"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	UserName  string    `json:"username"`
-	Archived  bool      `json:"archived"`
-	CreatedAt time.Time `json:"createdat"`
-	UpdatedAt time.Time `json:"updatedat"`
+	ID        uint64    `json:"id" gorm:"primary_key,autoIncrement,not null"`
+	Title     string    `json:"title,omitempty"`
+	Content   string    `json:"content" gorm:"not null"`
+	UserName  string    `json:"username" gorm:"not null"`
+	Archived  bool      `json:"archived,omitempty"`
+	CreatedAt time.Time `json:"createdat" gorm:"not null"`
+	UpdatedAt time.Time `json:"updatedat" gorm:"index,not null"`
 }
 
 // User is a user of the application
@@ -48,4 +48,10 @@ type Claims struct {
 	Role     string `json:"role"`
 	Level    int    `json:"level"`
 	jwt.RegisteredClaims
+}
+
+// Config is the configuration for CLI
+type Config struct {
+	Token    string `json:"token"`
+	APIToken string `json:"api_token"`
 }

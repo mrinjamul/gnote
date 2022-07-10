@@ -194,13 +194,22 @@ func (n *note) Update(ctx *gin.Context) {
 		log.Fatal(err)
 	}
 
-	var note, existingNote models.Note
+	var note models.Note
 	err = json.Unmarshal(bytes, &note)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Get existing note
+	var existingNote models.Note
+	existingNote = models.Note{
+		ID: uint64(id),
+	}
 	// get existing note
+	existingNote, err = n.noteRepo.Read(ctx, existingNote)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if note.Title == "" {
 		existingNote.Title = note.Title
@@ -211,9 +220,9 @@ func (n *note) Update(ctx *gin.Context) {
 	if note.UserName == "" {
 		existingNote.UserName = note.UserName
 	}
-	// if note.Archived != existingNote.Archived {
-	// 	existingNote.Archived = note.Archived
-	// }
+	if note.Archived != existingNote.Archived {
+		existingNote.Archived = note.Archived
+	}
 
 	// Get cookie "token"
 	tokenString, err := ctx.Cookie("token")
@@ -244,9 +253,12 @@ func (n *note) Update(ctx *gin.Context) {
 	note.ID = uint64(id)
 
 	// if username is not same as login
-	if claims.UserName != note.UserName {
+	if claims.UserName != existingNote.UserName {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"error": "you are not owner of this note",
+			"error":      "you are not owner of this note",
+			"pre_notes":  existingNote,
+			"claim_user": claims.UserName,
+			"notes":      note,
 		})
 		ctx.Abort()
 		return

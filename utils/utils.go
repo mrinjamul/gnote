@@ -2,11 +2,14 @@ package utils
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 	"unicode"
@@ -15,10 +18,135 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var ApiURL = "https://gnote.up.railway.app"
+// var ApiURL = "https://gnote.up.railway.app"
+// var ApiURL = "https://note.mrinjamul.in"
+var ApiURL = "http://localhost:8080"
+
+// HomeDir returns the home directory of the current user
+func HomeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
+	}
+	home, _ := os.UserHomeDir()
+	return home
+}
+
+func GetConfig() (*models.Config, error) {
+	// Get Home location
+	home := HomeDir()
+	// Get config file path
+	// using filepath join
+	configFilePath := filepath.Join(home, ".gnote")
+	configFile := filepath.Join(configFilePath, "config.json")
+	// check if the file exists
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+		// Create the config file
+		createIfNotExist(configFile, configFilePath)
+	}
+
+	var config models.Config
+	// Read the config file and unmarshal it to config
+	configFileContent, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(configFileContent, &config)
+	if err != nil {
+		return nil, err
+	}
+	return &config, nil
+}
+
+// SaveToken saves the token to the config file
+func SaveToken(token string) error {
+	// Get Home location
+	home := HomeDir()
+	// Get config file path
+	// using filepath join
+	configFilePath := filepath.Join(home, ".gnote")
+	configFile := filepath.Join(configFilePath, "config.json")
+	// check if the file exists
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+		// Create the config file
+		createIfNotExist(configFile, configFilePath)
+	}
+	// // Read the config file and unmarshal it to config
+	// configFileContent, err := ioutil.ReadFile(configFile)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	var config models.Config
+	// err = json.Unmarshal(configFileContent, &config)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	config.Token = token
+	// Marshal the config to json
+	jsonStr, err := json.Marshal(config)
+	if err != nil {
+		panic(err)
+	}
+	// Write the json to the config file
+	err = ioutil.WriteFile(configFile, jsonStr, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	return nil
+}
+
+// createIfNotExist creates a file if it doesn't exist
+func createIfNotExist(file string, path string) {
+	// Check if directory exists
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		// Create the directory
+		os.MkdirAll(path, os.ModePerm)
+	}
+	// Create the config file
+	os.Create(file)
+}
+
+// GenTips generates random tips
+func GenTips() string {
+	tips := []string{
+		"Use `gnote login` to login to gnote",
+		"Use `gnote logout` to logout from gnote",
+		"Use `gnote create` to create a new note",
+		"Use `gnote read [id]` to read a note",
+		"Use `gnote update [note]` to update a note",
+		"Use `gnote delete [note]` to delete a note",
+		"Use `gnote list` to list all notes",
+		"Use `gnote search [query]` to search notes",
+		"Use `gnote version` to get gnote's version",
+		"Use `gnote serve` to start gnote backend server",
+		"Use `gnote help` to show this message",
+		"Use `gnote help [command]` to show help for a command",
+	}
+	rand.Seed(time.Now().UnixNano())
+	return tips[rand.Intn(len(tips))]
+}
+
+// CLILogin logs in to the API
+func CLILogin(username, password string) (string, error) {
+	jsonStr := []byte(`{"username":"` + username + `", "password":"` + password + `"}`)
+	body, err := sendRequest("POST", "/auth/login", jsonStr, "")
+	if err != nil {
+		return "", err
+	}
+	return body, nil
+}
+
+// CLISignup signs up to the API
+func CLISignup(username, password string) (string, error) {
+	jsonStr := []byte(`{"username":"` + username + `", "password":"` + password + `"}`)
+	body, err := sendRequest("POST", "/auth/signup", jsonStr, "")
+	if err != nil {
+		return "", err
+	}
+	return body, nil
+}
 
 // sendRequest sends a request to the API
-func sendRequest(method, path string, jsonData []byte) (string, error) {
+func sendRequest(method, path string, jsonData []byte, token string) (string, error) {
 	// Create a new request
 	req, err := http.NewRequest(method, ApiURL+path, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -33,7 +161,7 @@ func sendRequest(method, path string, jsonData []byte) (string, error) {
 	// }
 	// req.URL.RawQuery = q.Encode()
 	// Set Bearer authorization
-	req.Header.Set("Authorization", "Bearer "+"token")
+	req.Header.Set("Authorization", "Bearer "+token)
 	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -50,32 +178,32 @@ func sendRequest(method, path string, jsonData []byte) (string, error) {
 }
 
 // CreateNote creates a note
-func CreateNote(title, content string) (string, error) {
+func CreateNote(title, content string, token string) (string, error) {
 	jsonStr := []byte(`{"title":"` + title + `", "content":"` + content + `"}`)
-	return sendRequest("POST", "/api/notes", jsonStr)
+	return sendRequest("POST", "/api/notes", jsonStr, token)
 }
 
 // GetNotes gets all notes
-func GetNotes() (string, error) {
-	return sendRequest("GET", "/api/notes", nil)
+func GetNotes(token string) (string, error) {
+	return sendRequest("GET", "/api/notes", nil, token)
 }
 
 // GetNote gets a note
-func GetNote(id string) (string, error) {
+func GetNote(id string, token string) (string, error) {
 	jsonStr := []byte(`{"id":"` + id + `"}`)
-	return sendRequest("GET", "/api/notes/"+id, jsonStr)
+	return sendRequest("GET", "/api/notes/"+id, jsonStr, token)
 }
 
 // UpdateNote updates a note
-func UpdateNote(id, title, content string) (string, error) {
+func UpdateNote(id, title, content string, token string) (string, error) {
 	jsonStr := []byte(`{"title":"` + title + `", "content":"` + content + `"}`)
-	return sendRequest("PUT", "/api/notes/"+id, jsonStr)
+	return sendRequest("PUT", "/api/notes/"+id, jsonStr, token)
 }
 
 // DeleteNote deletes a note
-func DeleteNote(id string) (string, error) {
+func DeleteNote(id string, token string) (string, error) {
 	jsonStr := []byte(`{"id":"` + id + `"}`)
-	return sendRequest("DELETE", "/api/notes/"+id, jsonStr)
+	return sendRequest("DELETE", "/api/notes/"+id, jsonStr, token)
 }
 
 // GetEnv gets the environment variable

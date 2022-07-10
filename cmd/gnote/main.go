@@ -28,6 +28,9 @@ func main() {
 	rootCmd.AddCommand(removeCmd)
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(searchCmd)
+	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(signupCmd)
+	rootCmd.AddCommand(logoutCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

@@ -21,9 +21,9 @@ var (
 
 func init() {
 	jwtKey = utils.GetEnv("JWT_SECRET")
-	if jwtKey == "" {
-		panic("JWT_SECRET not set")
-	}
+	// if jwtKey == "" {
+	// 	panic("JWT_SECRET not set")
+	// }
 }
 
 // User is a controller for users
@@ -143,9 +143,9 @@ func (u *user) SignIn(ctx *gin.Context) {
 		return
 	}
 	// Get the expected password from the database
-	user, err = u.userRepo.GetUserByEmail(creds.UserName)
-	if err != nil {
-		user, err = u.userRepo.GetUserByUsername(creds.UserName)
+	user, err = u.userRepo.GetUserByUsername(creds.UserName)
+	if err != nil || user.ID == 0 {
+		user, err = u.userRepo.GetUserByEmail(creds.Email) // error
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
 				"error": "invalid credentials",

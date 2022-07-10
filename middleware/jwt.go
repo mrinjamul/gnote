@@ -16,9 +16,9 @@ var (
 
 func init() {
 	jwtKey = utils.GetEnv("JWT_SECRET")
-	if jwtKey == "" {
-		panic("JWT_SECRET not set")
-	}
+	// if jwtKey == "" {
+	// 	panic("JWT_SECRET not set")
+	// }
 }
 
 // JWTAuth is a middleware for validating JWT tokens

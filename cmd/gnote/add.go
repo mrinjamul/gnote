@@ -29,16 +29,24 @@ var (
 
 // addCmd represents the version command
 var addCmd = &cobra.Command{
-	Use:   "add",
-	Short: "add a note.",
+	Use:     "add",
+	Aliases: []string{"create"},
+	Short:   "add a note.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if flagTitle == "" || flagContent == "" {
 			fmt.Println("title and content are required")
 			return
 		}
+
+		// Read token from config
+		config, err := utils.GetConfig()
+		if err != nil {
+			panic(err)
+		}
+
 		fmt.Println("Title:", flagTitle)
 		fmt.Println("Body:", flagContent)
-		data, err := utils.CreateNote(flagTitle, flagContent)
+		data, err := utils.CreateNote(flagTitle, flagContent, config.Token)
 		if err != nil {
 			fmt.Println(err)
 			return
