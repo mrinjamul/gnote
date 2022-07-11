@@ -55,6 +55,10 @@ func InitRoutes(routes *gin.Engine) {
 	routes.GET("/", func(ctx *gin.Context) {
 		svc.ViewService().App(ctx, fsRoot)
 	})
+	// About Page
+	routes.GET("/about", func(ctx *gin.Context) {
+		svc.ViewService().About(ctx, fsRoot)
+	})
 	// Login Page
 	routes.GET("/login", func(ctx *gin.Context) {
 		svc.ViewService().Login(ctx, fsRoot)

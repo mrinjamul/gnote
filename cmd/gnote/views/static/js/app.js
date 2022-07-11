@@ -5,29 +5,32 @@ let notes = [];
 noteDocument = document.getElementById("notes");
 userDocument = document.getElementById("userinfo");
 
-getData("/user/me").then((data) => {
-  username = data.user.username;
-});
-
 const nonotes = `
       <h1 id="nonewnotes">
         <p>You don't have any notes yet! Go ahead and write some!</p>
       </h1>
       `;
-let userinfo = `
+let userinfo;
+
+getData("/user/me").then((data) => {
+  username = data.user.username;
+  userinfo = `
       <h1>Welcome, <br />@${username}!</h1>
         <p class="text-primary fs-4">
           You've got <span id="count">${notes.length}</span> note(s) on Gnote.
         </p>
-        `;
+      `;
+});
 
 function submitAndUpdate() {
-  createNote = document.getElementById("inputnote");
+  let noteTitle = document.getElementById("inputtitle");
+  let createNote = document.getElementById("inputnote");
   if (createNote.innerText == "") {
     return;
   }
+  title = noteTitle.innerHTML != "" ? noteTitle.innerHTML : "untitled";
   let note = {
-    title: "untitled",
+    title: title,
     content: createNote.innerText,
   };
   postData("/api/notes", note).then((data) => {
@@ -53,7 +56,7 @@ async function fetchAndUpdate() {
     notesDiv = "";
 
     for (const note of notes) {
-      let date = new Date(note.createdat);
+      let date = new Date(note.created_at);
       let noteDiv = `
             <div key=${note.id} class="card isnote">
               <div class="card-body">

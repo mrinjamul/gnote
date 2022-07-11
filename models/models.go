@@ -14,8 +14,8 @@ type Note struct {
 	Content   string    `json:"content" gorm:"not null"`
 	Username  string    `json:"username" gorm:"not null"`
 	Archived  bool      `json:"archived,omitempty"`
-	CreatedAt time.Time `json:"createdat" gorm:"not null"`
-	UpdatedAt time.Time `json:"updatedat" gorm:"index,not null"`
+	CreatedAt time.Time `json:"created_at" gorm:"not null"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"index,not null"`
 }
 
 // User is a user of the application

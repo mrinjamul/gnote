@@ -11,6 +11,7 @@ import (
 
 type Views interface {
 	App(ctx *gin.Context, fsRoot fs.FS)
+	About(ctx *gin.Context, fsRoot fs.FS)
 	Login(ctx *gin.Context, fsRoot fs.FS)
 	Register(ctx *gin.Context, fsRoot fs.FS)
 	MyAccount(ctx *gin.Context, fsRoot fs.FS)
@@ -56,6 +57,24 @@ func (v *views) App(ctx *gin.Context, fsRoot fs.FS) {
 	defer index.Close()
 	// Read the file
 	b, err := ioutil.ReadAll(index)
+	if err != nil {
+		panic(err)
+	}
+	// Write the content to the response
+	// ctx.Writer.Write(b)
+	ctx.Data(http.StatusOK, "text/html; charset=utf-8", b)
+
+}
+
+func (v *views) About(ctx *gin.Context, fsRoot fs.FS) {
+	// Get about.html from fsRoot
+	about, err := fsRoot.Open("about.html")
+	if err != nil {
+		panic(err)
+	}
+	defer about.Close()
+	// Read the file
+	b, err := ioutil.ReadAll(about)
 	if err != nil {
 		panic(err)
 	}
