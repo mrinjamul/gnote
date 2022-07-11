@@ -9,7 +9,7 @@ import (
 
 type NoteRepo interface {
 	Create(ctx *gin.Context, note *models.Note) error
-	Read(ctx *gin.Context, note models.Note) (models.Note, error)
+	Read(ctx *gin.Context, note *models.Note) error
 	ReadByUserName(ctx *gin.Context, user string) ([]models.Note, error)
 	ReadAll(ctx *gin.Context) ([]models.Note, error)
 	Update(ctx *gin.Context, note models.Note) (models.Note, error)
@@ -32,12 +32,12 @@ func (repo *noteRepo) Create(ctx *gin.Context, note *models.Note) error {
 }
 
 // Read reads a note
-func (repo *noteRepo) Read(ctx *gin.Context, note models.Note) (models.Note, error) {
+func (repo *noteRepo) Read(ctx *gin.Context, note *models.Note) error {
 	result := repo.db.First(&note)
 	if result.Error != nil {
-		return note, result.Error
+		return result.Error
 	}
-	return note, nil
+	return nil
 }
 
 // ReadByUserName reads all notes by user name
@@ -62,27 +62,12 @@ func (repo *noteRepo) ReadAll(ctx *gin.Context) ([]models.Note, error) {
 
 // Update updates a note
 func (repo *noteRepo) Update(ctx *gin.Context, note models.Note) (models.Note, error) {
-	var existingNote models.Note
-	result := repo.db.Find(&existingNote, "id = ?", note.ID)
-	if result.Error != nil {
-		return existingNote, result.Error
+	// Save notes
+	err := repo.db.Save(&note).Error
+	if err != nil {
+		return note, err
 	}
-
-	if note.Archived {
-		existingNote.Archived = true
-	}
-	if note.Title != "" {
-		existingNote.Title = note.Title
-	}
-	if note.Content != "" {
-		existingNote.Content = note.Content
-	}
-
-	result = repo.db.Save(existingNote)
-	if result.Error != nil {
-		return existingNote, result.Error
-	}
-	return existingNote, nil
+	return note, nil
 }
 
 // Delete deletes a note

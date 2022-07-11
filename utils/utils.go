@@ -70,16 +70,16 @@ func SaveToken(token string) error {
 		// Create the config file
 		createIfNotExist(configFile, configFilePath)
 	}
-	// // Read the config file and unmarshal it to config
-	// configFileContent, err := ioutil.ReadFile(configFile)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	// Read the config file and unmarshal it to config
+	configFileContent, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		panic(err)
+	}
 	var config models.Config
-	// err = json.Unmarshal(configFileContent, &config)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = json.Unmarshal(configFileContent, &config)
+	if err != nil {
+		panic(err)
+	}
 	config.Token = token
 	// Marshal the config to json
 	jsonStr, err := json.Marshal(config)

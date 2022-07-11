@@ -37,8 +37,8 @@ type User struct {
 
 // Create a struct that models the structure of a user in the request body
 type Credentials struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	Username string `json:"username,omitempty"`
+	Email    string `json:"email,omitempty"`
 	Password string `json:"password"`
 }
 
@@ -52,6 +52,7 @@ type Claims struct {
 
 // Config is the configuration for CLI
 type Config struct {
+	Username string `json:"username,omitempty"`
 	Token    string `json:"token"`
-	APIToken string `json:"api_token"`
+	APIToken string `json:"api_token,omitempty"`
 }

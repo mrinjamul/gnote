@@ -117,7 +117,7 @@ func (n *note) Read(ctx *gin.Context) {
 		Username: claims.Username,
 	}
 
-	note, err = n.noteRepo.Read(ctx, note)
+	err = n.noteRepo.Read(ctx, &note)
 	if err != nil {
 		ctx.JSON(
 			http.StatusOK,
@@ -201,26 +201,25 @@ func (n *note) Update(ctx *gin.Context) {
 	}
 
 	// Get existing note
-	var existingNote models.Note
-	existingNote = models.Note{
+	existingNote := models.Note{
 		ID: uint64(id),
 	}
 	// get existing note
-	existingNote, err = n.noteRepo.Read(ctx, existingNote)
+	err = n.noteRepo.Read(ctx, &existingNote)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if note.Title == "" {
+	if note.Title != "" {
 		existingNote.Title = note.Title
 	}
-	if note.Content == "" {
+	if note.Content != "" {
 		existingNote.Content = note.Content
 	}
-	if note.Username == "" {
+	if note.Username != "" {
 		existingNote.Username = note.Username
 	}
-	if note.Archived != existingNote.Archived {
+	if note.Archived {
 		existingNote.Archived = note.Archived
 	}
 
@@ -255,10 +254,9 @@ func (n *note) Update(ctx *gin.Context) {
 	// if username is not same as login
 	if claims.Username != existingNote.Username {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"error":      "you are not owner of this note",
-			"pre_notes":  existingNote,
-			"claim_user": claims.Username,
-			"notes":      note,
+			"error":     "you are not the owner of this note",
+			"note":      note,
+			"orig_note": existingNote,
 		})
 		ctx.Abort()
 		return
