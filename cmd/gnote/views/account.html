@@ -98,11 +98,11 @@
       // fetch userinfo
       getData("/user/me").then((data) => {
         username = data.user.username;
-      });
-      // Get Notes
-      getData("/api/notes").then((data) => {
-        notes = data.notes;
-        SetInfo(username, notes);
+        // Get Notes
+        getData("/api/notes").then((data) => {
+          notes = data.notes;
+          SetInfo(username, notes);
+        });
       });
 
       function SetInfo(username, notes) {

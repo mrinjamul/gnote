@@ -36,6 +36,7 @@ function submitAndUpdate() {
   postData("/api/notes", note).then((data) => {
     fetchAndUpdate();
     createNote.innerText = "";
+    noteTitle.innerHTML = "";
   });
 }
 
