@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -126,31 +127,31 @@ func GenTips() string {
 }
 
 // CLILogin logs in to the API
-func CLILogin(username, password string) (string, error) {
+func CLILogin(username, password string) ([]byte, error) {
 	jsonStr := []byte(`{"username":"` + username + `", "password":"` + password + `"}`)
 	body, err := sendRequest("POST", "/auth/login", jsonStr, "")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	return body, nil
 }
 
 // CLISignup signs up to the API
-func CLISignup(username, password string) (string, error) {
+func CLISignup(username, password string) ([]byte, error) {
 	jsonStr := []byte(`{"username":"` + username + `", "password":"` + password + `"}`)
 	body, err := sendRequest("POST", "/auth/signup", jsonStr, "")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	return body, nil
 }
 
 // sendRequest sends a request to the API
-func sendRequest(method, path string, jsonData []byte, token string) (string, error) {
+func sendRequest(method, path string, jsonData []byte, token string) ([]byte, error) {
 	// Create a new request
 	req, err := http.NewRequest(method, ApiURL+path, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	// Set the request's header
 	req.Header.Set("Content-Type", "application/json")
@@ -166,44 +167,104 @@ func sendRequest(method, path string, jsonData []byte, token string) (string, er
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	// Read the response
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(body), nil
+	return body, nil
 }
 
 // CreateNote creates a note
-func CreateNote(title, content string, token string) (string, error) {
+func CreateNote(title, content string, token string) (models.Note, error) {
+	var note models.Note
 	jsonStr := []byte(`{"title":"` + title + `", "content":"` + content + `"}`)
-	return sendRequest("POST", "/api/notes", jsonStr, token)
+	body, err := sendRequest("POST", "/api/notes", jsonStr, token)
+	if err != nil {
+		return note, err
+	}
+	// Parse json body
+	err = json.Unmarshal(body, &note)
+	if err != nil {
+		return note, err
+	}
+	return note, nil
 }
 
 // GetNotes gets all notes
-func GetNotes(token string) (string, error) {
-	return sendRequest("GET", "/api/notes", nil, token)
+func GetNotes(token string) ([]models.Note, error) {
+	var notes []models.Note
+	body, err := sendRequest("GET", "/api/notes", nil, token)
+	if err != nil {
+		return notes, err
+	}
+	// Parse json body
+	err = json.Unmarshal(body, &notes)
+	if err != nil {
+		return notes, err
+	}
+	return notes, err
 }
 
 // GetNote gets a note
-func GetNote(id string, token string) (string, error) {
+func GetNote(id string, token string) (models.Note, error) {
+	var note models.Note
 	jsonStr := []byte(`{"id":"` + id + `"}`)
-	return sendRequest("GET", "/api/notes/"+id, jsonStr, token)
+	body, err := sendRequest("GET", "/api/notes/"+id, jsonStr, token)
+	if err != nil {
+		return note, err
+	}
+	// Parse json body
+	err = json.Unmarshal(body, &note)
+	if err != nil {
+		return note, err
+	}
+	return note, nil
 }
 
 // UpdateNote updates a note
-func UpdateNote(id, title, content string, token string) (string, error) {
+func UpdateNote(id, title, content string, token string) (models.Note, error) {
+	var note models.Note
 	jsonStr := []byte(`{"title":"` + title + `", "content":"` + content + `"}`)
-	return sendRequest("PUT", "/api/notes/"+id, jsonStr, token)
+	body, err := sendRequest("PUT", "/api/notes/"+id, jsonStr, token)
+	if err != nil {
+		return note, err
+	}
+	// Parse json body
+	err = json.Unmarshal(body, &note)
+	if err != nil {
+		return note, err
+	}
+	return note, nil
 }
 
 // DeleteNote deletes a note
-func DeleteNote(id string, token string) (string, error) {
+func DeleteNote(id string, token string) (models.Note, error) {
+	var note models.Note
 	jsonStr := []byte(`{"id":"` + id + `"}`)
-	return sendRequest("DELETE", "/api/notes/"+id, jsonStr, token)
+	body, err := sendRequest("DELETE", "/api/notes/"+id, jsonStr, token)
+	if err != nil {
+		return note, err
+	}
+	// Parse json body
+	err = json.Unmarshal(body, &note)
+	if err != nil {
+		return note, err
+	}
+	return note, nil
+}
+
+func PrintNote(note models.Note) {
+	var printableData string
+	printableData += "[" + strconv.Itoa(int(note.ID)) + "]" + "\t" + "Account: " + note.Username + "\n"
+	printableData += "Title: " + note.Title + "\n"
+	printableData += ">>\n" + note.Content + "\n"
+	printableData += "Created on: " + note.CreatedAt.String() + "\n"
+	printableData += "Updated on: " + note.UpdatedAt.String() + "\n"
+	fmt.Println(printableData)
 }
 
 // GetEnv gets the environment variable

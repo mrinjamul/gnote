@@ -43,14 +43,14 @@ var updateCmd = &cobra.Command{
 		if len(args) > 1 {
 			flagContent = args[1]
 		}
-		fmt.Println("Title:", flagTitle)
-		fmt.Println("Body:", flagContent)
-		data, err := utils.UpdateNote(ID, flagTitle, flagContent, config.Token)
+
+		note, err := utils.UpdateNote(ID, flagTitle, flagContent, config.Token)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(data)
+		fmt.Println("Updated note: ")
+		utils.PrintNote(note)
 	},
 }
 

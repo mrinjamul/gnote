@@ -43,12 +43,12 @@ var listCmd = &cobra.Command{
 		}
 
 		if ID != "" {
-			data, err := utils.GetNote(ID, config.Token)
+			note, err := utils.GetNote(ID, config.Token)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-			fmt.Println(data)
+			utils.PrintNote(note)
 			return
 		}
 
@@ -58,7 +58,9 @@ var listCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(notes)
+		for _, note := range notes {
+			utils.PrintNote(note)
+		}
 	},
 }
 

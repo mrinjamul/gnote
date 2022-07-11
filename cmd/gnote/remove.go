@@ -42,11 +42,11 @@ var removeCmd = &cobra.Command{
 			panic(err)
 		}
 
-		data, err := utils.DeleteNote(id, config.Token)
+		note, err := utils.DeleteNote(id, config.Token)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(data)
+		fmt.Printf("%d: %s has been deleted!\n", note.ID, note.Title)
 	},
 }

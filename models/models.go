@@ -53,6 +53,6 @@ type Claims struct {
 // Config is the configuration for CLI
 type Config struct {
 	Username string `json:"username,omitempty"`
-	Token    string `json:"token"`
+	Token    string `json:"token,omitempty"`
 	APIToken string `json:"api_token,omitempty"`
 }

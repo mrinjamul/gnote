@@ -44,14 +44,13 @@ var addCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Println("Title:", flagTitle)
-		fmt.Println("Body:", flagContent)
-		data, err := utils.CreateNote(flagTitle, flagContent, config.Token)
+		note, err := utils.CreateNote(flagTitle, flagContent, config.Token)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(data)
+		fmt.Println("Created note: ")
+		utils.PrintNote(note)
 	},
 }
 

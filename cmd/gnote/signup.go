@@ -54,7 +54,7 @@ var signupCmd = &cobra.Command{
 			return
 		}
 		var resp map[string]string
-		err = json.Unmarshal([]byte(data), &resp)
+		err = json.Unmarshal(data, &resp)
 		if err != nil {
 			fmt.Println(err)
 			return

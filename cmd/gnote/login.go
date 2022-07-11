@@ -55,7 +55,7 @@ var loginCmd = &cobra.Command{
 		}
 		// marshal to models.Config
 		var config map[string]string
-		err = json.Unmarshal([]byte(data), &config)
+		err = json.Unmarshal(data, &config)
 		if err != nil {
 			fmt.Println(err)
 			return
