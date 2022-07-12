@@ -72,6 +72,12 @@ func (u *user) SignUp(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
+	user.Username = strings.ToLower(user.Username)
+	user.Username = strings.TrimSpace(user.Username)
+
+	// check if valid email
+	user.Email = strings.ToLower(user.Email)
+	user.Email = strings.TrimSpace(user.Email)
 
 	// Validate Password
 	ok := utils.IsValidPassword(user.Password)
@@ -98,13 +104,26 @@ func (u *user) SignUp(ctx *gin.Context) {
 	}
 
 	// Create the user
-	err = u.userRepo.CreateUser(user)
+	err = u.userRepo.CreateUser(&user)
 	if err != nil {
 		ctx.JSON(http.StatusConflict, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
+
+	// First User will be admin
+	if user.ID == 1 {
+		user.Role = "admin"
+		user.Level = 4
+		err = u.userRepo.UpdateUser(&user)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Internal Server Error",
+			})
+		}
+	}
+
 	userinfo := map[string]interface{}{
 		"id":          user.ID,
 		"username":    user.Username,
@@ -136,6 +155,13 @@ func (u *user) SignIn(ctx *gin.Context) {
 		})
 		return
 	}
+
+	// Trim spaces
+	user.Username = strings.ToLower(user.Username)
+	user.Username = strings.TrimSpace(user.Username)
+	user.Email = strings.ToLower(user.Email)
+	user.Email = strings.TrimSpace(user.Email)
+
 	if (creds.Email == "" && creds.Username == "") || creds.Password == "" {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": "email or password cannot be empty",
@@ -375,7 +401,7 @@ func (u *user) UserDetails(ctx *gin.Context) {
 		"first_name":  user.FirstName,
 		"middle_name": user.MiddleName,
 		"last_name":   user.LastName,
-		"full_name":   user.FirstName + "" + user.MiddleName + "" + user.LastName,
+		"full_name":   strings.TrimSpace(user.FirstName + " " + user.MiddleName + " " + user.LastName),
 		"dob":         user.DOB,
 		"created_at":  user.CreatedAt,
 		"deleted_at":  user.DeletedAt,
@@ -407,7 +433,7 @@ func (u *user) ViewUser(ctx *gin.Context) {
 		// if user is found, return the user info
 		userinfo := map[string]string{
 			"username":   user.Username,
-			"full_name":  user.FirstName + "" + user.MiddleName + "" + user.LastName,
+			"full_name":  user.FirstName + " " + user.MiddleName + " " + user.LastName,
 			"email":      user.Email,
 			"created_at": user.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
@@ -505,7 +531,7 @@ func (u *user) UpdateUser(ctx *gin.Context) {
 		"first_name":  user.FirstName,
 		"middle_name": user.MiddleName,
 		"last_name":   user.LastName,
-		"full_name":   user.FirstName + "" + user.MiddleName + "" + user.LastName,
+		"full_name":   strings.TrimSpace(user.FirstName + " " + user.MiddleName + " " + user.LastName),
 		"dob":         user.DOB,
 		"created_at":  user.CreatedAt,
 		"deleted_at":  user.DeletedAt,

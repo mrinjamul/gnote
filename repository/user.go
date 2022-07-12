@@ -13,7 +13,7 @@ import (
 // UserRepo is a repository for users
 type UserRepo interface {
 	// CreateUser creates a new user
-	CreateUser(user models.User) error
+	CreateUser(user *models.User) error
 	// GetUserByID returns a user by id
 	GetUser(id int) (models.User, error)
 	// GetUsers returns all users
@@ -34,7 +34,7 @@ type userRepo struct {
 }
 
 // CreateUser creates a new user
-func (u *userRepo) CreateUser(user models.User) error {
+func (u *userRepo) CreateUser(user *models.User) error {
 	// check if user already exists
 	var exists bool
 	err := u.db.
