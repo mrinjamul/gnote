@@ -74,7 +74,7 @@ func (n *note) Create(ctx *gin.Context) {
 		})
 	}
 	ctx.JSON(200, gin.H{
-		"message": "Success",
+		"message": "success",
 		"note":    note,
 	})
 }

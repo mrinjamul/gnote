@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -16,7 +17,17 @@ import (
 )
 
 // var ApiURL = "https://note.mrinjamul.in"
+// var ApiURL = "http://localhost:8080"
 var ApiURL = "https://gnote.up.railway.app"
+
+// Response is the response from the API
+type Response struct {
+	Status  string        `json:"status"`
+	Message string        `json:"message"`
+	Note    models.Note   `json:"note"`
+	Notes   []models.Note `json:"notes"`
+	Error   string        `json:"error"`
+}
 
 // HomeDir returns the home directory of the current user
 func HomeDir() string {
@@ -175,82 +186,96 @@ func sendRequest(method, path string, jsonData []byte, token string) ([]byte, er
 
 // CreateNote creates a note
 func CreateNote(title, content string, token string) (models.Note, error) {
-	var note models.Note
+	var resp Response
 	jsonStr := []byte(`{"title":"` + title + `", "content":"` + content + `"}`)
 	body, err := sendRequest("POST", "/api/notes", jsonStr, token)
 	if err != nil {
-		return note, err
+		return models.Note{}, err
 	}
 	// Parse json body
-	err = json.Unmarshal(body, &note)
+	err = json.Unmarshal(body, &resp)
 	if err != nil {
-		return note, err
+		return models.Note{}, err
 	}
-	return note, nil
+	if resp.Status == "success" || resp.Message == "success" {
+		return resp.Note, nil
+	}
+	return models.Note{}, errors.New(resp.Error)
 }
 
 // GetNotes gets all notes
 func GetNotes(token string) ([]models.Note, error) {
-	var notes []models.Note
+	var resp Response
 	body, err := sendRequest("GET", "/api/notes", nil, token)
 	if err != nil {
-		return notes, err
+		return []models.Note{}, err
 	}
-	fmt.Println(string(body))
 	// Parse json body
-	err = json.Unmarshal(body, &notes)
+	err = json.Unmarshal(body, &resp)
 	if err != nil {
-		return notes, err
+		return []models.Note{}, err
 	}
-	return notes, err
+	if resp.Status == "success" || resp.Message == "success" {
+		return resp.Notes, nil
+	}
+	return []models.Note{}, errors.New(resp.Error)
 }
 
 // GetNote gets a note
 func GetNote(id string, token string) (models.Note, error) {
-	var note models.Note
+	var resp Response
 	jsonStr := []byte(`{"id":"` + id + `"}`)
 	body, err := sendRequest("GET", "/api/notes/"+id, jsonStr, token)
 	if err != nil {
-		return note, err
+		return models.Note{}, err
 	}
 	// Parse json body
-	err = json.Unmarshal(body, &note)
+	err = json.Unmarshal(body, &resp)
 	if err != nil {
-		return note, err
+		return models.Note{}, err
 	}
-	return note, nil
+	if resp.Status == "success" || resp.Message == "success" {
+		return resp.Note, nil
+	}
+	return models.Note{}, errors.New(resp.Error)
 }
 
 // UpdateNote updates a note
 func UpdateNote(id, title, content string, token string) (models.Note, error) {
-	var note models.Note
+	var resp Response
 	jsonStr := []byte(`{"title":"` + title + `", "content":"` + content + `"}`)
 	body, err := sendRequest("PUT", "/api/notes/"+id, jsonStr, token)
 	if err != nil {
-		return note, err
+		return models.Note{}, err
 	}
 	// Parse json body
-	err = json.Unmarshal(body, &note)
+	err = json.Unmarshal(body, &resp)
 	if err != nil {
-		return note, err
+		return models.Note{}, err
 	}
-	return note, nil
+	if resp.Status == "success" || resp.Message == "success" {
+		return resp.Note, nil
+	}
+	return models.Note{}, errors.New(resp.Error)
 }
 
 // DeleteNote deletes a note
 func DeleteNote(id string, token string) (models.Note, error) {
-	var note models.Note
+	var resp Response
 	jsonStr := []byte(`{"id":"` + id + `"}`)
 	body, err := sendRequest("DELETE", "/api/notes/"+id, jsonStr, token)
 	if err != nil {
-		return note, err
+		return models.Note{}, err
 	}
 	// Parse json body
-	err = json.Unmarshal(body, &note)
+	err = json.Unmarshal(body, &resp)
 	if err != nil {
-		return note, err
+		return models.Note{}, err
 	}
-	return note, nil
+	if resp.Status == "success" || resp.Message == "success" {
+		return resp.Note, nil
+	}
+	return models.Note{}, errors.New(resp.Error)
 }
 
 func PrintNote(note models.Note) {
