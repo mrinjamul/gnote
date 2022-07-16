@@ -422,15 +422,56 @@ func (u *user) ViewUser(ctx *gin.Context) {
 	user, err := u.userRepo.GetUserByUsername(username)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal Server Error",
+			"error": "user not found",
+			"log":   err,
 		})
 		ctx.Abort()
 		return
 	}
 
+	// Check if the user is logged in
+	tokenString, _ := ctx.Cookie("token")
+	if tokenString == "" {
+		tkn, _ := utils.ParseToken(ctx.Request.Header.Get("Authorization"))
+		tokenString = tkn
+	}
+
 	// check if user is found or not
 	if user.ID > 0 && !user.DeletedAt.Valid {
 		// if user is found, return the user info
+		if tokenString != "" {
+			claims := &models.Claims{}
+			token, _ := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+				return []byte(jwtKey), nil
+			})
+			if !token.Valid {
+				ctx.JSON(http.StatusUnauthorized, gin.H{
+					"error": "invalid token",
+				})
+				ctx.Abort()
+				return
+			}
+			if claims.Username == username {
+				userinfo := map[string]interface{}{
+					"id":          user.ID,
+					"username":    user.Username,
+					"email":       user.Email,
+					"first_name":  user.FirstName,
+					"middle_name": user.MiddleName,
+					"last_name":   user.LastName,
+					"full_name":   strings.TrimSpace(user.FirstName + " " + user.MiddleName + " " + user.LastName),
+					"dob":         user.DOB,
+					"created_at":  user.CreatedAt,
+					"deleted_at":  user.DeletedAt,
+				}
+
+				ctx.JSON(http.StatusOK, gin.H{
+					"status":  "success",
+					"message": "Welcome, " + user.FirstName + "!",
+					"user":    userinfo,
+				})
+			}
+		}
 		userinfo := map[string]string{
 			"username":   user.Username,
 			"full_name":  user.FirstName + " " + user.MiddleName + " " + user.LastName,
@@ -441,12 +482,12 @@ func (u *user) ViewUser(ctx *gin.Context) {
 			"status": "success",
 			"user":   userinfo,
 		})
-	} else {
-		// if user is not found, return error
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"error": "user not found",
-		})
 	}
+
+	// if user is not found, return error
+	ctx.JSON(http.StatusNotFound, gin.H{
+		"error": "user not found",
+	})
 }
 
 // UpdateUser updates the user details
