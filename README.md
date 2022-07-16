@@ -6,6 +6,10 @@
   </p>
 </div>
 
+hosted at [note.mrinjamul.in](https://note.mrinjamul.in).
+
+Note: Work in progress.
+
 ## Requirements
 
 - [Golang](https://golang.org/dl/)
@@ -53,4 +57,3 @@ export $(cat .env | xargs)
 
 - Backend is open sourced under the [MIT license](LICENSE)
 - CLI is open sourced under the [Apache 2 license](cmd/gnote/LICENSE)
-
