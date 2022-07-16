@@ -537,9 +537,43 @@ func (u *user) UpdateUser(ctx *gin.Context) {
 		"deleted_at":  user.DeletedAt,
 	}
 
+	// Generate new JWT Token
+	issuedAt := time.Now()
+	expiresAt := time.Now().Add(5 * time.Minute)
+	// Create the JWT claims, which includes the username and expiry time
+	claims = &models.Claims{
+		Username: user.Username,
+		Role:     user.Role,
+		Level:    user.Level,
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt: jwt.NewNumericDate(issuedAt),
+			// In JWT, the expiry time is expressed as unix milliseconds
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+		},
+	}
+	// Declare the token with the algorithm used for signing, and the claims
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	// Create the JWT string
+	tokenString, err = token.SignedString([]byte(jwtKey))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal Server Error",
+		})
+		ctx.Abort()
+		return
+	}
+
+	hostname := ctx.Request.Host
+	if strings.Contains(hostname, ":") {
+		hostname = strings.Split(hostname, ":")[0]
+	}
+	// Set cookie with name "token" and value "tokenString"
+	ctx.SetCookie("token", tokenString, utils.ToMaxAge(expiresAt), "/", hostname, false, true)
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"status":  "success",
 		"message": "User updated successfully",
+		"token":   tokenString,
 		"user":    userinfo,
 	})
 }
